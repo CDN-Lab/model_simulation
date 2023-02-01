@@ -1,6 +1,6 @@
 import pandas as pd
 import os,sys
-from shared_core import make_dir
+from shared_core.common_functions import make_dir
 
 def main():
 	# take an arbitrary subject for example
