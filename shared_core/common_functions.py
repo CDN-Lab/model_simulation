@@ -6,6 +6,15 @@ def make_dir(this_dir,verbose=False):
             print('Creating: {}'.format(this_dir))
         os.makedirs(this_dir)
 
+def request_path(prompt='Please enter the path to the file'):
+    fn = input(prompt + ':\n')
+    if not os.path.exists(fn):
+        print('Could not find this path, please try again')
+        sys.exit()
+    else:
+        return fn
+
+
 def main(args):
     make_dir(args,verbose=True)
 

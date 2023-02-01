@@ -1,15 +1,12 @@
 import pandas as pd
 import os,sys
-from shared_core.common_functions import make_dir
+from shared_core.common_functions import make_dir, request_path
+
 
 def main():
 	# take an arbitrary subject for example
 	# '/Users/pizarror/mturk/idm_data/split/idm_2022-12-08_12h53.16.781/cdd/idm_2022-12-08_12h53.16.781_cdd.csv'
-	CDD_fn = input('Please enter the path to a CDD file:\n')
-	if not os.path.exists(CDD_fn):
-		print('Could not find this path, please try again')
-		sys.exit()
-
+	CDD_fn = request_path(prompt='Please enter the path to an arbitray CDD file')
 	df = pd.read_csv(CDD_fn)
 	print(df)
 	print(list(df))
