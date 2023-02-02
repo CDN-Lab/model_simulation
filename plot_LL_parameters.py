@@ -1,6 +1,7 @@
 import os,sys
 import numpy as np
 import pandas as pd
+import pickle
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from shared_core.common_functions import request_path
@@ -86,10 +87,20 @@ def main():
 		linewidth=0, antialiased=False)
 	plt.xlabel('gamma')
 	plt.ylabel('kappa')
-	plt.zlabel('negative log-likelihood')
+	ax.set_zlabel('negative log-likelihood')
+
+	pickle_fn = '/Users/pizarror/mturk/figs/model_simulation/negLL_gamma_kappa_2500_samples.fig.pickle'
+	print('Saving 3D plot to : {}'.format(pickle_fn))
+	pickle.dump(fig, open(pickle_fn, 'wb'))
+	
 	plt.show()
 
-
+	'''
+	===Showing the figure after saving it===
+	import pickle
+	figx = pickle.load(open(pickle_fn, 'rb'))
+	figx.show() # Show the figure, edit it, etc.!
+	'''
 
 if __name__ == "__main__":
 	# main will be executed after running the script
