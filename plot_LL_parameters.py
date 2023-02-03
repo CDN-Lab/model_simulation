@@ -22,7 +22,7 @@ from IDM_model.src import CDD_functions
 
 
 
-def simulate_estimate_model(fn,gamma0,kappa0,alpha0,verbose=False):
+def simulate_estimate_DD_model(fn,gamma0,kappa0,alpha0,verbose=False):
 
 	df = pd.read_csv(fn)
 	# remove practice trials
@@ -76,25 +76,20 @@ def plot_save_3D(X,Y,Z,xlabel='',ylabel='',zlabel='',nb_samples=50):
 	plt.show()
 
 
-def simulate_gamma_kappa(fn,nb_samples=50):
-	# set alpha=1, simulate over other variables
-	alpha0 = 1
 
-	# bounds for gamma and kappa
-	gamma_bound = [0,8]
-	kappa_bound = [1e-3,8]
+def simulate_v1_v2(fn='',v1_bound=[0,8],v2_bound=[1e-3,8],v_fixed=1.0,nb_samples=50):
+	# nb_samples is number of samples for each variable
 
-	# number of samples for each variable
-	gamma,kappa = range_variables(gamma_bound,kappa_bound,nb_samples=nb_samples)
+	# prepare the variables to range and negLL matrix for storing values
+	var1,var2 = range_variables(v1_bound,v2_bound,nb_samples=nb_samples)
 	negLL = np.zeros((nb_samples,nb_samples))
 
-	for ig,g in enumerate(gamma):
-		print(ig,g)
-		for ik,k in enumerate(kappa):
-			inegLL = simulate_estimate_model(fn,g,k,alpha0)
-			negLL[ig,ik] = inegLL
+	for iv1,v1 in enumerate(var1):
+		print(iv1,v1)
+		for iv2,v2 in enumerate(var2):
+			negLL[iv1,iv2] = simulate_estimate_DD_model(fn,v1,v2,v_fixed)
 
-	return gamma,kappa,negLL
+	return var1,var2,negLL
 
 
 def main():
@@ -102,9 +97,20 @@ def main():
 	CDD_fn = request_input_path(prompt='Please enter the path to an arbitray CDD file')
 	
 	nb_samples=50
-	gamma,kappa,negLL = simulate_gamma_kappa(CDD_fn,nb_samples=nb_samples)
+	
+	# First simulation, fix alpha to 1.0 and vary gamma and kappa
+	alpha0 = 1
+	# bounds for gamma and kappa
+	gamma_bound = [0,8]
+	kappa_bound = [1e-3,8]
+	gamma,kappa,negLL = simulate_v1_v2(fn=CDD_fn,v1_bound=gamma_bound,v2_bound=kappa_bound,v_fixed=alpha0,nb_samples=nb_samples)
 	plot_save_3D(gamma,kappa,negLL,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples)
 
+	'''
+	nb_samples=50
+	gamma,kappa,negLL = simulate_gamma_kappa(CDD_fn,nb_samples=nb_samples)
+	plot_save_3D(gamma,kappa,negLL,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples)
+	'''
 
 	'''
 	===Showing the figure after saving it===
