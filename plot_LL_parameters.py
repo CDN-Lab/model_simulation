@@ -56,7 +56,7 @@ def range_variables(v1_bound,v2_bound,nb_samples=100):
 	v2 = np.linspace(v2_bound[0], v2_bound[1], num=nb_samples).tolist()
 	return v1,v2
 
-def plot_save_3D(X,Y,Z,xlabel='',ylabel='',zlabel=''):
+def plot_save_3D(X,Y,Z,xlabel='',ylabel='',zlabel='',nb_samples=50):
 
 	fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
@@ -67,8 +67,9 @@ def plot_save_3D(X,Y,Z,xlabel='',ylabel='',zlabel=''):
 	plt.ylabel(ylabel)
 	ax.set_zlabel(zlabel)
 
-	pickle_fn = request_save_path(prompt='Please enter the path to the .fig.pickle file to save the plot')
-	# '/Users/pizarror/mturk/figs/model_simulation/negLL_gamma_kappa_2500_samples.fig.pickle'
+	model_sim_dir = '/Users/pizarror/mturk/figs/model_simulation/'
+	pickle_fn = os.path.join(model_sim_dir,'negLL_{}_{}_{}_samples.fig.pickle'.format(xlabel,ylabel,int(nb_samples**2)))
+	# request_save_path(prompt='Please enter the path to the .fig.pickle file to save the plot')
 	print('Saving 3D plot to : {}'.format(pickle_fn))
 	pickle.dump(fig, open(pickle_fn, 'wb'))
 	
@@ -100,10 +101,9 @@ def main():
 
 	CDD_fn = request_input_path(prompt='Please enter the path to an arbitray CDD file')
 	
-	gamma,kappa,negLL = simulate_gamma_kappa(CDD_fn,nb_samples=50)
-
-	plot_save_3D(gamma,kappa,negLL,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood')
-
+	nb_samples=50
+	gamma,kappa,negLL = simulate_gamma_kappa(CDD_fn,nb_samples=nb_samples)
+	plot_save_3D(gamma,kappa,negLL,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples)
 
 
 	'''
