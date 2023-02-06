@@ -1,12 +1,12 @@
 import pandas as pd
 import os,sys
-from shared_core.common_functions import make_dir, request_path
+from shared_core.common_functions import make_dir, request_input_path, save_df
 
 
 def main():
 	# take an arbitrary subject for example
 	# '/Users/pizarror/mturk/idm_data/split/idm_2022-12-08_12h53.16.781/cdd/idm_2022-12-08_12h53.16.781_cdd.csv'
-	CDD_fn = request_path(prompt='Please enter the path to an arbitray CDD file')
+	CDD_fn = request_input_path(prompt='Please enter the path to an arbitray CDD file')
 	df = pd.read_csv(CDD_fn)
 	print(df)
 	print(list(df))
@@ -17,12 +17,7 @@ def main():
 	df_kappa = df[['kappa','cdd_immed_amt', 'cdd_immed_wait', 'cdd_delay_amt', 'cdd_delay_wait']]
 	print(df_kappa)
 
-	# '/Users/pizarror/mturk/idm_data/kappa_values.csv'
-	fn = input('Please enter the path where to write kappa estimates:\n')
-	make_dir(os.path.dirname(fn))
-	print('Saving kappa value to : {}'.format(fn))
-	df_kappa.to_csv(fn)
-
+	save_df(df_kappa,prompt='Please enter the path where to write kappa estimates')
 
 
 if __name__ == "__main__":
