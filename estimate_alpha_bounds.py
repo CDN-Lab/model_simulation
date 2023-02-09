@@ -1,6 +1,6 @@
 import pandas as pd
 import os,sys
-import math
+import numpy as np
 from shared_core.common_functions import make_dir, request_input_path, save_df
 
 
@@ -16,7 +16,9 @@ def main():
 
 	# indifference point for each possible set of task values, set SV_now = SV_later to find alpha
 	# alpha = log(p_risk) / (log(v_safe/v_risk)) 
-	df['alpha'] = math.log( df['crdm_lott_p'] ) / math.log( df['crdm_sure_amt']/df['crdm_lott_amt'] )
+	# a = math.log( df['crdm_lott_p'] )
+	# b = math.log( df['crdm_sure_amt']/df['crdm_lott_amt'] )
+	df['alpha'] = np.log( df['crdm_lott_p']/100.0 ) / ( np.finfo(np.float32).eps + np.log( df['crdm_sure_amt']/df['crdm_lott_amt'] ) )
 	df = df.sort_values(by=['alpha'])
 	df_alpha = df[['alpha','crdm_sure_amt', 'crdm_sure_p', 'crdm_lott_amt', 'crdm_lott_p','crdm_amb_lev']]
 	print(df_alpha)
