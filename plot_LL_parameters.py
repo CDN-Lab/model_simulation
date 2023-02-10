@@ -32,7 +32,7 @@ def plot_save_3D(X,Y,Z,xlabel='',ylabel='',zlabel='',nb_samples=50):
 	plt.ylabel(ylabel)
 	ax.set_zlabel(zlabel)
 
-	model_sim_dir = '/Users/pizarror/mturk/figs/model_simulation/'
+	model_sim_dir = '/Users/pizarror/mturk/model_simulation/figs'
 	pickle_fn = os.path.join(model_sim_dir,'negLL_{}_{}_{}_samples.fig.pickle'.format(xlabel,ylabel,int(nb_samples**2)))
 	# request_save_path(prompt='Please enter the path to the .fig.pickle file to save the plot')
 	print('Saving 3D plot to : {}'.format(pickle_fn))
@@ -129,23 +129,28 @@ def simulate_v1_v2(task='CDD',fn='',v1_bound=[0,8],v2_bound=[1e-3,8],v_fixed=1.0
 
 
 def main():
-
+	# For some reason I cannot run these together, I have to run for one task, save, and rerun script
 	nb_samples=50
-	
 	'''
+	task='CDD'
+
+	# /Users/pizarror/mturk/idm_data/batch_output/bonus2/idm_2022-12-08_14h39.52.884/cdd/idm_2022-12-08_14h39.52.884_cdd.csv
 	CDD_fn = request_input_path(prompt='Please enter the path to an arbitray CDD file')
 	
 	# First simulation, fix alpha to 1.0 and vary gamma and kappa
 	alpha0 = 1
 	# bounds for gamma and kappa
 	gamma_bound = [0,8]
-	kappa_bound = [1e-3,8]
+	kappa_bound = [0.0022,7.875]
 	
-	gamma,kappa,negLL = simulate_v1_v2(task='CDD',fn=CDD_fn,v1_bound=gamma_bound,v2_bound=kappa_bound,v_fixed=alpha0,nb_samples=nb_samples)
+	gamma,kappa,negLL = simulate_v1_v2(task=task,fn=CDD_fn,v1_bound=gamma_bound,v2_bound=kappa_bound,v_fixed=alpha0,nb_samples=nb_samples)
 	plot_save_3D(gamma,kappa,negLL,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples)
-	'''
-	
+
+
+	'''	
 	task='CRDM'
+
+	# /Users/pizarror/mturk/idm_data/batch_output/bonus2/idm_2022-12-08_14h39.52.884/crdm/idm_2022-12-08_14h39.52.884_crdm.csv
 	CRDM_fn = request_input_path(prompt='Please enter the path to an arbitray {} file'.format(task))
 
 	# Second simulation, fix alpha to 1.0 and vary gamma and kappa
