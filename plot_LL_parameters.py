@@ -131,7 +131,6 @@ def simulate_v1_v2(task='CDD',fn='',v1_bound=[0,8],v2_bound=[1e-3,8],v_fixed=1.0
 def main():
 	# For some reason I cannot run these together, I have to run for one task, save, and rerun script
 	nb_samples=50
-	'''
 	task='CDD'
 
 	# /Users/pizarror/mturk/idm_data/batch_output/bonus2/idm_2022-12-08_14h39.52.884/cdd/idm_2022-12-08_14h39.52.884_cdd.csv
@@ -144,7 +143,11 @@ def main():
 	kappa_bound = [0.0022,7.875]
 	
 	gamma,kappa,negLL = simulate_v1_v2(task=task,fn=CDD_fn,v1_bound=gamma_bound,v2_bound=kappa_bound,v_fixed=alpha0,nb_samples=nb_samples)
-	plot_save_3D(gamma,kappa,negLL,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples)
+	with open('estimates/gkLL.npy', 'wb') as f:
+	    np.save(f, gamma)
+	    np.save(f, kappa)
+	    np.save(f, negLL)
+	# plot_save_3D(gamma,kappa,negLL,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples)
 
 
 	'''	
@@ -160,8 +163,12 @@ def main():
 	alpha_bound = [0.125,4.341]
 
 	gamma,alpha,negLL = simulate_v1_v2(task=task,fn=CRDM_fn,v1_bound=gamma_bound,v2_bound=alpha_bound,v_fixed=beta0,nb_samples=nb_samples)
-	plot_save_3D(gamma,alpha,negLL,xlabel='gamma',ylabel='alpha',zlabel='negative log-likelihood',nb_samples=nb_samples)
-
+	with open('estimates/gaLL.npy', 'wb') as f:
+	    np.save(f, gamma)
+	    np.save(f, alpha)
+	    np.save(f, negLL)
+	# plot_save_3D(gamma,alpha,negLL,xlabel='gamma',ylabel='alpha',zlabel='negative log-likelihood',nb_samples=nb_samples)
+	'''
 
 if __name__ == "__main__":
 	# main will be executed after running the script
