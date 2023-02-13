@@ -13,6 +13,7 @@ We used the choice set space defined by the experiments to determine possible va
 ### Confidence Delay Decision (CDD)
 
 In this task we will equate the subject value (SV) for the two choices: $SV_{now}$ and $SV_{delay}$.
+
 $$
 \begin{align}
 SV_{now} =& SV_{delay} \\ \\
