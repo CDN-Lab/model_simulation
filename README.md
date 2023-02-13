@@ -36,6 +36,29 @@ Using this formula, we can compute values for $\kappa$ by setting the correspond
 $v_{now}$ = `df['cdd_immed_amt']`, $v_{delay}$ = `df['cdd_delay_amt']`, and $d_{delay}$ = `df['cdd_delay_wait']`. We computed kappa, saved them, and display the ranges of values sorted by kappa, showing the first 5 and the last 5 of the spreadsheet.
 
 
+### Confidence Delay Decision (CDD)
+
+In this task we will equate the subject value (SV) for the two choices: $SV_{now}$ and $SV_{delay}$.
+
+\begin{align}
+SV_{now} =& SV_{delay} \\ \\
+\frac{v_{now}^{\alpha}}{1+\kappa d_{now}} =& \frac{v_{delay}^{\alpha}}{1+\kappa d_{delay}}
+\end{align}
+
+The value for $d_{now}$ is set to $0$ and we set $\alpha=1$ so we can simplify and solve for $\kappa$:
+
+\begin{align}
+v_{now} = \frac{v_{delay}}{1+\kappa d_{delay}}
+\end{align}
+
+\begin{align}
+\kappa = \frac{v_{delay}/v_{now} - 1}{d_{delay}}
+\end{align}
+
+Using this formula, we can compute values for $\kappa$ by setting the corresponding variables and column names:
+$v_{now}$ = `df['cdd_immed_amt']`, $v_{delay}$ = `df['cdd_delay_amt']`, and $d_{delay}$ = `df['cdd_delay_wait']`. We computed kappa, saved them, and display the ranges of values sorted by kappa, showing the first 5 and the last 5 of the spreadsheet.
+
+
 ```python
 import pandas as pd
 fn='./estimates/kappa_values.csv'
