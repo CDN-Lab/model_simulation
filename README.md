@@ -19,10 +19,10 @@ SV_{now} =& SV_{delay} \\ \\
 \frac{v_{now}^{\alpha}}{1+\kappa d_{now}} =& \frac{v_{delay}^{\alpha}}{1+\kappa d_{delay}}
 \end{align}
 
-The value for $d_{now}$ is set to $0$ so we can simplify:
+The value for $d_{now}$ is set to $0$ and we set $\alpha=1$ so we can simplify:
 
 \begin{align}
-v_{now}^{\alpha} = \frac{v_{delay}^{\alpha}}{1+\kappa d_{delay}}
+v_{now} = \frac{v_{delay}}{1+\kappa d_{delay}}
 \end{align}
 
 and solve for $\kappa$:
@@ -194,11 +194,6 @@ plt.show()
 
 
 ```python
-
-```
-
-
-```python
 %matplotlib widget
 
 from mpl_toolkits.mplot3d import axes3d
@@ -233,3 +228,8 @@ plt.show()
 </div>
 
 
+
+
+```python
+
+```
