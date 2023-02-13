@@ -23,13 +23,12 @@ $$
 
 The value for $d_{now}$ is set to $0$ and we set $\alpha=1$ so we can simplify and solve for $\kappa$:
 
+$$
 \begin{align}
-v_{now} = \frac{v_{delay}}{1+\kappa d_{delay}}
-\end{align}
-
-\begin{align}
+v_{now} = \frac{v_{delay}}{1+\kappa d_{delay}} \\
 \kappa = \frac{v_{delay}/v_{now} - 1}{d_{delay}}
 \end{align}
+$$
 
 Using this formula, we can compute values for $\kappa$ by setting the corresponding variables and column names:
 $v_{now}$ = `df['cdd_immed_amt']`, $v_{delay}$ = `df['cdd_delay_amt']`, and $d_{delay}$ = `df['cdd_delay_wait']`. We computed kappa, saved them, and display the ranges of values sorted by kappa, showing the first 5 and the last 5 of the spreadsheet.
@@ -65,24 +64,23 @@ This means that we can model with the following ranges for $\kappa=[0.0022,7.875
 
 In this task we will equate the subject value (SV) for the two choices: $SV_{sure}$ and $SV_{lottery}$ with no ambiguity, i.e., $A=0$.
 
+$$
 \begin{align}
 SV_{sure} =& SV_{lottery} \\ \\
 p_{safe}v_{sure}^{\alpha} =& p_{lottery}v_{lottery}^{\alpha}
 \end{align}
+$$
 
-The value for $p_{safe}$ is set to $1$ so we can simplify:
+The value for $p_{safe}$ is set to $1$ so we can simplify, and solve for $\alpha$:
 
+$$
 \begin{align}
-v_{sure}^{\alpha} = p_{lottery}v_{lottery}^{\alpha}
-\end{align}
-
-and solve for $\alpha$:
-
-\begin{align}
+v_{sure}^{\alpha} = p_{lottery}v_{lottery}^{\alpha} \\
 \left(\frac{v_{sure}}{v_{lottery}}\right)^{\alpha} = p_{lottery} \\ 
 \alpha \log{\left(\frac{v_{sure}}{v_{lottery}}\right)} = log{\left(p_{lottery}\right)} \\
 \alpha  =  \frac{log{\left(p_{lottery}\right)}}{\log{\left(\frac{v_{sure}}{v_{lottery}}\right)}}
 \end{align}
+$$
 
 Using this formula, we can compute values for $\alpha$ by setting the corresponding variables and column names:
 $v_{sure}$ = `df['crdm_sure_amt']`, $v_{lottery}$ = `df['crdm_lott_amt']`, and $p_{lottery}$ = `df['crdm_lott_p']`. We computed $\alpha$, saved them, and display the ranges of values sorted by $\alpha$, showing the spreadsheet.
