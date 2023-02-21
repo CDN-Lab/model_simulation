@@ -140,17 +140,18 @@ def main():
 	alpha0 = 1
 	# bounds for gamma and kappa
 	gamma_bound = [0,8]
-	kappa_bound = [0.0022,7.875]
+	kappa_bound = [0.0022,0.368]
 	
 	gamma,kappa,negLL = simulate_v1_v2(task=task,fn=CDD_fn,v1_bound=gamma_bound,v2_bound=kappa_bound,v_fixed=alpha0,nb_samples=nb_samples)
+	kappa = np.log(kappa)
+	plot_save_3D(gamma,kappa,negLL,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples)
+	'''
 	with open('estimates/gkLL.npy', 'wb') as f:
 	    np.save(f, gamma)
 	    np.save(f, kappa)
 	    np.save(f, negLL)
-	# plot_save_3D(gamma,kappa,negLL,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples)
 
 
-	'''	
 	task='CRDM'
 
 	# /Users/pizarror/mturk/idm_data/batch_output/bonus2/idm_2022-12-08_14h39.52.884/crdm/idm_2022-12-08_14h39.52.884_crdm.csv
