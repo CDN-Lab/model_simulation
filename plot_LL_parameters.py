@@ -18,7 +18,7 @@ parent = os.path.dirname(current)
 # the sys.path.
 sys.path.append(parent)
 
-from IDM_model.src import CDD_functions, CRDM_functions
+from IDM_model.src import model_functions as mf
 
 
 def plot_save_3D(X,Y,Z,xlabel='',ylabel='',zlabel='',nb_samples=50):
@@ -54,17 +54,18 @@ def simulate_estimate_CDD_model(fn,gamma0,kappa0,alpha0,verbose=False):
 	df = df.loc[df['cdd_trial_type']=='task']
 	# insert probability as choice into data
 	cols = ['cdd_trial_resp.corr','cdd_immed_amt','cdd_immed_wait','cdd_delay_amt','cdd_delay_wait']
-	data = CDD_functions.get_data(df,cols,alpha_hat=alpha0)[0]
+	# also returns percent_reward which we do not need here
+	data = mf.get_data(df,cols,alpha_hat=alpha0)[0]
 
 	# generate probability based on gamma,kappa then threshold at 0.5 to generate choice
-	prob_choice = CDD_functions.probability_choose_delay(
-		data['cdd_immed_amt'],data['cdd_immed_wait'],data['cdd_delay_amt'],data['cdd_delay_wait'],
-		[gamma0,kappa0],[alpha0]*df.shape[0])[0]
-	choice = np.around(np.array(prob_choice))
-	data['cdd_trial_resp.corr'] = choice
+	prob_choice = mf.probability_choice([gamma0,kappa0],data['cdd_immed_amt'],data['cdd_delay_amt'],
+		time_null=data['cdd_immed_wait'],time_reward=data['cdd_delay_wait'],alpha=[alpha0]*df.shape[0])[0]
+	data['cdd_trial_resp.corr'] = np.around(np.array(prob_choice))
 
 	# estimate parameters based on self-generated data
-	negLL,gamma_hat,kappa_hat = CDD_functions.fit_delay_discount_model(data,disp=verbose)
+	gk_guess = [0.15, 0.5]
+	gk_bounds = ((0,8),(0.0022,7.875))
+	negLL,gamma_hat,kappa_hat = mf.fit_computational_model(data,guess=gk_guess,bounds=gk_bounds,disp=verbose)
 	if verbose:
 		print(data)
 		print("Negative log-likelihood: {}, gamma: {}, kappa: {}". format(negLL, gamma_hat, kappa_hat))
