@@ -22,7 +22,7 @@ sys.path.append(parent)
 from IDM_model.src import model_functions as mf
 
 
-def plot_save_3D(X,Y,Z,xlabel='',ylabel='',zlabel='',nb_samples=50):
+def plot_save_3D(X,Y,Z,xlabel='',ylabel='',zlabel='',nb_samples=50,verbose=False):
 
 	fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
@@ -39,10 +39,11 @@ def plot_save_3D(X,Y,Z,xlabel='',ylabel='',zlabel='',nb_samples=50):
 	print('Saving 3D plot to : {}'.format(pickle_fn))
 	pickle.dump(fig, open(pickle_fn, 'wb'))
 
-	print('\n\n===Showing the figure in python (or ipython) after saving it===\n\n')
-	print('>>> import pickle')
-	print(">>> figx = pickle.load(open({}, 'rb'))".format(pickle_fn))
-	print('>>> figx.show() for Showing the figure, edit it, etc.!')
+	if verbose:
+		print('\n\n===Showing the figure in python (or ipython) after saving it===\n\n')
+		print('>>> import pickle')
+		print(">>> figx = pickle.load(open({}, 'rb'))".format(pickle_fn))
+		print('>>> figx.show() for Showing the figure, edit it, etc.!')
 	
 	plt.show()
 
@@ -67,18 +68,19 @@ def simulate_estimate_CDD_model(index,fn,gamma0,kappa0,alpha0,verbose=False):
 
 	# estimate parameters based on self-generated data
 	gk_guess = [0.15, 0.5]
-	gk_bounds = ((0,8),(0.0022,7.875))
+	gk_bounds = ((0,8),(0.0022,0.368))
 	negLL,gamma_hat,kappa_hat = mf.fit_computational_model(data,guess=gk_guess,bounds=gk_bounds,disp=verbose)
 
 	# sorted for plotting
 	SV_delta, p_choose_reward = zip(*sorted(zip(SV_delta, p_choose_reward)))
 	plt = mf.plot_fit(index,SV_delta,p_choose_reward,choice=data['cdd_trial_resp.corr'].tolist(),ylabel='prob_choose_delay',xlabel='SV difference (SV_delay - SV_immediate)',
-		title=r'$\gamma={0:0.4f}, \kappa={1:0.4f}$'.format(gamma0,kappa0))
+		title=r'$\gamma={0:0.3f}, \kappa={1:0.3f}$'.format(gamma0,kappa0))
 	textstr = r'$(\hat \gamma,\hat \kappa) : ({0:0.3f},{1:0.3f})$'.format(gamma_hat,kappa_hat)
 	# these are matplotlib.patch.Patch properties
 	props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 	# place a text box in upper left in axes coords
-	plt.text(0.6*max(SV_delta), 0.95, textstr, fontsize=14,verticalalignment='top', bbox=props)
+	xpos = 0.5*(max(SV_delta) - min(SV_delta)) + min(SV_delta)
+	plt.text(xpos, 0.8, textstr, fontsize=14,verticalalignment='top', bbox=props)
 
 	model_sim_dir = '/Users/pizarror/mturk/model_simulation/figs/choice_fit'	
 	cf.make_dir(model_sim_dir)
@@ -137,6 +139,7 @@ def simulate_v1_v2(task='CDD',fn='',v1_bound=[0,8],v2_bound=[1e-3,8],v_fixed=1.0
 		for iv1,v1 in enumerate(var1):
 			print(iv1,v1)
 			for iv2,v2 in enumerate(var2):
+					v2 = np.exp(v2)
 					negLL[iv1,iv2] = simulate_estimate_CDD_model(index,fn,v1,v2,v_fixed)
 					index += 1
 	elif 'CRDM' in task:
@@ -165,13 +168,15 @@ def simulate_CDD(nb_samples=50):
 	
 	# First simulation, fix alpha to 1.0 and vary gamma and kappa
 	alpha0 = 1
-	# bounds for gamma and kappa
+	# bounds for gamma and kappa : (noise and discount rate)
 	gamma_bound = [0,8]
-	kappa_bound = [0.0022,0.368]
+	# range for ln(discount_rate) : [-6,-1]
+	# kappa_bound = [0.0022,0.368]
+	log_discount_rate = [-6,-1]
 	
 	gamma,kappa,negLL = simulate_v1_v2(task=task,fn=CDD_fn,v1_bound=gamma_bound,v2_bound=kappa_bound,v_fixed=alpha0,nb_samples=nb_samples)
-	kappa = np.log(kappa)
-	plot_save_3D(gamma,kappa,negLL,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples)
+	# kappa = np.log(kappa)
+	plot_save_3D(gamma,kappa,negLL,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples,verbose=False)
 
 	# fn='estimates/kaLL.npy'
 	# save_to_numpy(fn,gamma,kappa,negLL)
@@ -189,7 +194,7 @@ def simulate_CRDM(nb_samples=50):
 	alpha_bound = [0.125,4.341]
 
 	gamma,alpha,negLL = simulate_v1_v2(task=task,fn=CRDM_fn,v1_bound=gamma_bound,v2_bound=alpha_bound,v_fixed=beta0,nb_samples=nb_samples)
-	plot_save_3D(gamma,alpha,negLL,xlabel='gamma',ylabel='alpha',zlabel='negative log-likelihood',nb_samples=nb_samples)
+	plot_save_3D(gamma,alpha,negLL,xlabel='gamma',ylabel='alpha',zlabel='negative log-likelihood',nb_samples=nb_samples,verbose=False)
 	
 	# fn='estimates/gaLL.npy'
 	# save_to_numpy(fn,gamma,kappa,negLL)
