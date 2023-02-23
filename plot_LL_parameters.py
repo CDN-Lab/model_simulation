@@ -4,7 +4,8 @@ import pandas as pd
 import pickle
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from shared_core.common_functions import request_input_path
+import shared_core.common_functions as cf
+# from shared_core.common_functions import request_input_path
 
 # getting the name of the directory
 # where the this file is present.
@@ -47,56 +48,69 @@ def plot_save_3D(X,Y,Z,xlabel='',ylabel='',zlabel='',nb_samples=50):
 
 
 
-def simulate_estimate_CDD_model(fn,gamma0,kappa0,alpha0,verbose=False):
-
+def simulate_estimate_CDD_model(index,fn,gamma0,kappa0,alpha0,verbose=False):
 	df = pd.read_csv(fn)
 	# remove practice trials
 	df = df.loc[df['cdd_trial_type']=='task']
 	# insert probability as choice into data
-	cols = ['cdd_trial_resp.corr','cdd_immed_amt','cdd_immed_wait','cdd_delay_amt','cdd_delay_wait']
+	cols = ['cdd_trial_resp.corr','cdd_immed_amt','cdd_immed_wait','cdd_delay_amt','cdd_delay_wait','alpha']
 	# also returns percent_reward which we do not need here
 	data = mf.get_data(df,cols,alpha_hat=alpha0)[0]
 
 	# generate probability based on gamma,kappa then threshold at 0.5 to generate choice
-	prob_choice = mf.probability_choice([gamma0,kappa0],data['cdd_immed_amt'],data['cdd_delay_amt'],
-		time_null=data['cdd_immed_wait'],time_reward=data['cdd_delay_wait'],alpha=[alpha0]*df.shape[0])[0]
-	data['cdd_trial_resp.corr'] = np.around(np.array(prob_choice))
+	p_choose_reward,SV_null,SV_reward = mf.probability_choice([gamma0,kappa0],data['cdd_immed_amt'],data['cdd_delay_amt'],
+		time_null=data['cdd_immed_wait'],time_reward=data['cdd_delay_wait'],alpha=[alpha0]*df.shape[0],task='cdd')
+	SV_delta = [rew-null for (rew,null) in zip(SV_reward,SV_null)]
+	
+	# sorted for plotting
+	SV_delta, p_choose_reward = zip(*sorted(zip(SV_delta, p_choose_reward)))
+	plt = mf.plot_fit(index,SV_delta,p_choose_reward,ylabel='prob_choose_delay',xlabel='SV difference (SV_delay - SV_immediate)',
+		title=r'$\gamma={0:0.4f}, \kappa={0:0.4f}$'.format(gamma0,kappa0))
+	model_sim_dir = '/Users/pizarror/mturk/model_simulation/figs/choice_fit'
+	cf.make_dir(model_sim_dir)
+	fig_fn = os.path.join(model_sim_dir,'gamma_{0:0.4f}_kappa_{1:0.4f}.png'.format(gamma0,kappa0))
+	plt.savefig(fig_fn)
+	print('Saving to : {}'.format(fig_fn))
+	plt.close(index)
+
+
+	# print(np.around(np.array(prob_choice)))
+	data['cdd_trial_resp.corr'] = np.around(np.array(p_choose_reward))
 
 	# estimate parameters based on self-generated data
 	gk_guess = [0.15, 0.5]
 	gk_bounds = ((0,8),(0.0022,7.875))
 	negLL,gamma_hat,kappa_hat = mf.fit_computational_model(data,guess=gk_guess,bounds=gk_bounds,disp=verbose)
+	print('Ground truth for (gamma,kappa) : ({},{})'.format(gamma0,kappa0))
+	print('Estimated values (gamma,kappa) : ({},{})'.format(gamma_hat,kappa_hat))
 	if verbose:
 		print(data)
 		print("Negative log-likelihood: {}, gamma: {}, kappa: {}". format(negLL, gamma_hat, kappa_hat))
-
 	return negLL
 
-def simulate_estimate_CRDM_model(fn,gamma0,alpha0,beta0,verbose=False):
-
+def simulate_estimate_CRDM_model(index,fn,gamma0,alpha0,beta0,verbose=False):
 	df = pd.read_csv(fn)
 	# remove practice trials
 	df = df.loc[df['crdm_trial_type']=='task']
 	# get data with specified columns
 	cols = ['crdm_trial_resp.corr','crdm_sure_amt','crdm_lott_amt','crdm_sure_p','crdm_lott_p','crdm_amb_lev']
-	data = CRDM_functions.get_data(df,cols)[0]
+	data = mf.get_data(df,cols)[0]
 
 	# generate probability based on gamma,kappa then threshold at 0.5 to generate choice and insert into data
-	prob_choice = CRDM_functions.probability_choose_ambiguity(
-		data['crdm_sure_amt'],data['crdm_lott_amt'],data['crdm_sure_p'],data['crdm_lott_p'],data['crdm_amb_lev'],
-		[gamma0,beta0,alpha0])[0]
-	choice = np.around(np.array(prob_choice))
-	data['crdm_trial_resp.corr'] = choice
+	prob_choice = mf.probability_choice([gamma0,beta0,alpha0],data['crdm_sure_amt'],data['crdm_lott_amt'],
+		p_null=data['crdm_sure_p'],p_reward=data['crdm_lott_p'],ambiguity=data['crdm_amb_lev'],task='crdm')[0]
+	data['crdm_trial_resp.corr'] = np.around(np.array(prob_choice))
 
 	# estimate parameters based on self-generated data
-	negLL,gamma_hat,beta_hat,alpha_hat = CRDM_functions.fit_ambiguity_risk_model(data,disp=verbose)
+	gba_guess = [0.15, 0.5, 0.6]
+	gba_bounds = ((0,8),(1e-8,6.4),(0.125,4.341))
+	negLL,gamma_hat,beta_hat,alpha_hat = mf.fit_computational_model(data,guess=gba_guess,bounds=gba_bounds,disp=verbose)
+	print('Ground truth for (gamma,alpha,beta) : ({},{},{})'.format(gamma0,alpha0,beta0))
+	print('Estimated values (gamma,alpha,beta) : ({},{},{})'.format(gamma_hat,alpha_hat,beta_hat))
 	if verbose:
 		print(data)
 		print("Negative log-likelihood: {}, gamma: {}, beta: {}, alpha: {}". format(negLL, gamma_hat, beta_hat, alpha_hat))
-
 	return negLL
-
-
 
 
 def range_variables(v1_bound,v2_bound,nb_samples=100):
@@ -112,30 +126,36 @@ def simulate_v1_v2(task='CDD',fn='',v1_bound=[0,8],v2_bound=[1e-3,8],v_fixed=1.0
 	# prepare the variables to range and negLL matrix for storing values
 	var1,var2 = range_variables(v1_bound,v2_bound,nb_samples=nb_samples)
 	negLL = np.zeros((nb_samples,nb_samples))
-
+	index = 0
 	if 'CDD' in task:
 		for iv1,v1 in enumerate(var1):
 			print(iv1,v1)
 			for iv2,v2 in enumerate(var2):
-					negLL[iv1,iv2] = simulate_estimate_CDD_model(fn,v1,v2,v_fixed)
+					negLL[iv1,iv2] = simulate_estimate_CDD_model(index,fn,v1,v2,v_fixed)
+					index += 1
 	elif 'CRDM' in task:
 		for iv1,v1 in enumerate(var1):
 			print(iv1,v1)
 			for iv2,v2 in enumerate(var2):
-					negLL[iv1,iv2] = simulate_estimate_CRDM_model(fn,v1,v2,v_fixed)
+					negLL[iv1,iv2] = simulate_estimate_CRDM_model(index,fn,v1,v2,v_fixed)
+					index += 1
 	else:
 		print('No task selected')
 
 	return var1,var2,negLL
 
 
-def main():
-	# For some reason I cannot run these together, I have to run for one task, save, and rerun script
-	nb_samples=50
+def save_to_numpy(fn,gamma,kappa,negLL):
+	with open(fn, 'wb') as f:
+	    np.save(f, gamma)
+	    np.save(f, kappa)
+	    np.save(f, negLL)
+
+def simulate_CDD(nb_samples=50):
 	task='CDD'
 
-	# /Users/pizarror/mturk/idm_data/batch_output/bonus2/idm_2022-12-08_14h39.52.884/cdd/idm_2022-12-08_14h39.52.884_cdd.csv
-	CDD_fn = request_input_path(prompt='Please enter the path to an arbitray CDD file')
+	CDD_fn = '/Users/pizarror/mturk/idm_data/batch_output/bonus2/idm_2022-12-08_14h39.52.884/cdd/idm_2022-12-08_14h39.52.884_cdd.csv'
+	# CDD_fn = cf.request_input_path(prompt='Please enter the path to an arbitray CDD file')
 	
 	# First simulation, fix alpha to 1.0 and vary gamma and kappa
 	alpha0 = 1
@@ -146,31 +166,36 @@ def main():
 	gamma,kappa,negLL = simulate_v1_v2(task=task,fn=CDD_fn,v1_bound=gamma_bound,v2_bound=kappa_bound,v_fixed=alpha0,nb_samples=nb_samples)
 	kappa = np.log(kappa)
 	plot_save_3D(gamma,kappa,negLL,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples)
-	'''
-	with open('estimates/gkLL.npy', 'wb') as f:
-	    np.save(f, gamma)
-	    np.save(f, kappa)
-	    np.save(f, negLL)
 
+	# fn='estimates/kaLL.npy'
+	# save_to_numpy(fn,gamma,kappa,negLL)
 
+def simulate_CRDM(nb_samples=50):
 	task='CRDM'
 
-	# /Users/pizarror/mturk/idm_data/batch_output/bonus2/idm_2022-12-08_14h39.52.884/crdm/idm_2022-12-08_14h39.52.884_crdm.csv
-	CRDM_fn = request_input_path(prompt='Please enter the path to an arbitray {} file'.format(task))
+	CRDM_fn = '/Users/pizarror/mturk/idm_data/batch_output/bonus2/idm_2022-12-08_14h39.52.884/crdm/idm_2022-12-08_14h39.52.884_crdm.csv'
+	# CRDM_fn = cf.request_input_path(prompt='Please enter the path to an arbitray {} file'.format(task))
 
 	# Second simulation, fix alpha to 1.0 and vary gamma and kappa
-	beta0 = 0.5
-	# bounds for gamma and kappa
+	beta0 = 0.8
+	# bounds for gamma and alpha
 	gamma_bound = [0,8]
 	alpha_bound = [0.125,4.341]
 
 	gamma,alpha,negLL = simulate_v1_v2(task=task,fn=CRDM_fn,v1_bound=gamma_bound,v2_bound=alpha_bound,v_fixed=beta0,nb_samples=nb_samples)
-	with open('estimates/gaLL.npy', 'wb') as f:
-	    np.save(f, gamma)
-	    np.save(f, alpha)
-	    np.save(f, negLL)
-	# plot_save_3D(gamma,alpha,negLL,xlabel='gamma',ylabel='alpha',zlabel='negative log-likelihood',nb_samples=nb_samples)
-	'''
+	plot_save_3D(gamma,alpha,negLL,xlabel='gamma',ylabel='alpha',zlabel='negative log-likelihood',nb_samples=nb_samples)
+	
+	# fn='estimates/gaLL.npy'
+	# save_to_numpy(fn,gamma,kappa,negLL)
+	
+def main():
+	# For some reason I cannot run these together, I have to run for one task, save, and rerun script
+	nb_samples=50
+
+	simulate_CDD(nb_samples=nb_samples)
+	# simulate_CRDM(nb_samples=nb_samples)
+
+
 
 if __name__ == "__main__":
 	# main will be executed after running the script
