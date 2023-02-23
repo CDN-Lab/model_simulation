@@ -65,7 +65,7 @@ def simulate_estimate_CDD_model(index,fn,gamma0,kappa0,alpha0,verbose=False):
 	# sorted for plotting
 	SV_delta, p_choose_reward = zip(*sorted(zip(SV_delta, p_choose_reward)))
 	plt = mf.plot_fit(index,SV_delta,p_choose_reward,ylabel='prob_choose_delay',xlabel='SV difference (SV_delay - SV_immediate)',
-		title=r'$\gamma={0:0.4f}, \kappa={0:0.4f}$'.format(gamma0,kappa0))
+		title=r'$\gamma={0:0.4f}, \kappa={1:0.4f}$'.format(gamma0,kappa0))
 	model_sim_dir = '/Users/pizarror/mturk/model_simulation/figs/choice_fit'
 	cf.make_dir(model_sim_dir)
 	fig_fn = os.path.join(model_sim_dir,'gamma_{0:0.4f}_kappa_{1:0.4f}.png'.format(gamma0,kappa0))
