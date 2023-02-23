@@ -59,21 +59,9 @@ def simulate_estimate_CDD_model(index,fn,gamma0,kappa0,alpha0,verbose=False):
 
 	# generate probability based on gamma,kappa then threshold at 0.5 to generate choice
 	p_choose_reward,SV_null,SV_reward = mf.probability_choice([gamma0,kappa0],data['cdd_immed_amt'],data['cdd_delay_amt'],
-		time_null=data['cdd_immed_wait'],time_reward=data['cdd_delay_wait'],alpha=[alpha0]*df.shape[0],task='cdd')
+		time_null=data['cdd_immed_wait'],time_reward=data['cdd_delay_wait'],alpha=data['alpha'],task='cdd')
 	SV_delta = [rew-null for (rew,null) in zip(SV_reward,SV_null)]
 	
-	# sorted for plotting
-	SV_delta, p_choose_reward = zip(*sorted(zip(SV_delta, p_choose_reward)))
-	plt = mf.plot_fit(index,SV_delta,p_choose_reward,ylabel='prob_choose_delay',xlabel='SV difference (SV_delay - SV_immediate)',
-		title=r'$\gamma={0:0.4f}, \kappa={1:0.4f}$'.format(gamma0,kappa0))
-	model_sim_dir = '/Users/pizarror/mturk/model_simulation/figs/choice_fit'
-	cf.make_dir(model_sim_dir)
-	fig_fn = os.path.join(model_sim_dir,'gamma_{0:0.4f}_kappa_{1:0.4f}.png'.format(gamma0,kappa0))
-	plt.savefig(fig_fn)
-	print('Saving to : {}'.format(fig_fn))
-	plt.close(index)
-
-
 	# print(np.around(np.array(prob_choice)))
 	data['cdd_trial_resp.corr'] = np.around(np.array(p_choose_reward))
 
@@ -81,6 +69,24 @@ def simulate_estimate_CDD_model(index,fn,gamma0,kappa0,alpha0,verbose=False):
 	gk_guess = [0.15, 0.5]
 	gk_bounds = ((0,8),(0.0022,7.875))
 	negLL,gamma_hat,kappa_hat = mf.fit_computational_model(data,guess=gk_guess,bounds=gk_bounds,disp=verbose)
+
+	# sorted for plotting
+	SV_delta, p_choose_reward = zip(*sorted(zip(SV_delta, p_choose_reward)))
+	plt = mf.plot_fit(index,SV_delta,p_choose_reward,choice=data['cdd_trial_resp.corr'].tolist(),ylabel='prob_choose_delay',xlabel='SV difference (SV_delay - SV_immediate)',
+		title=r'$\gamma={0:0.4f}, \kappa={1:0.4f}$'.format(gamma0,kappa0))
+	textstr = r'$(\hat \gamma,\hat \kappa) : ({0:0.3f},{1:0.3f})$'.format(gamma_hat,kappa_hat)
+	# these are matplotlib.patch.Patch properties
+	props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+	# place a text box in upper left in axes coords
+	plt.text(0.6*max(SV_delta), 0.95, textstr, fontsize=14,verticalalignment='top', bbox=props)
+
+	model_sim_dir = '/Users/pizarror/mturk/model_simulation/figs/choice_fit'	
+	cf.make_dir(model_sim_dir)
+	fig_fn = os.path.join(model_sim_dir,'gamma_{0:0.4f}_kappa_{1:0.4f}.png'.format(gamma0,kappa0))
+	plt.savefig(fig_fn)
+	print('Saving to : {}'.format(fig_fn))
+	plt.close(index)
+
 	print('Ground truth for (gamma,kappa) : ({},{})'.format(gamma0,kappa0))
 	print('Estimated values (gamma,kappa) : ({},{})'.format(gamma_hat,kappa_hat))
 	if verbose:
@@ -190,7 +196,7 @@ def simulate_CRDM(nb_samples=50):
 	
 def main():
 	# For some reason I cannot run these together, I have to run for one task, save, and rerun script
-	nb_samples=50
+	nb_samples=10
 
 	simulate_CDD(nb_samples=nb_samples)
 	# simulate_CRDM(nb_samples=nb_samples)
