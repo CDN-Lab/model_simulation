@@ -33,6 +33,12 @@ import os,sys
 
 # Libs
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+
+# Own modules
+import shared_core.common_functions as cf
 
 
 __author__ = 'Ricardo Pizarro'
@@ -46,10 +52,110 @@ __status__ = 'Dev'
 
 
 
+def scatter_hist(x, y, ax, ax_histx, ax_histy,xlabel='',ylabel='',title=''):
+	ax.scatter(x, y)
+	ax.set_xlabel(xlabel,fontsize=14)
+	ax.set_ylabel(ylabel,fontsize=14)
+	plt.suptitle(title,fontsize=20)
+	ax_histx.hist(x,bins=20)
+	ax_histy.hist(y, bins=20,orientation = 'horizontal')
+
+
+def setup_fig_ax():
+
+	fig = plt.figure()
+	gs = GridSpec(4, 4)
+
+	ax = fig.add_subplot(gs[1:4, 0:3])
+	ax_histx = fig.add_subplot(gs[0,0:3])
+	ax_histy = fig.add_subplot(gs[1:4, 3])
+	ax_histx.tick_params(axis="x", labelbottom=False)
+	ax_histy.tick_params(axis="y", labelleft=False)
+
+	return ax,ax_histx,ax_histy
+
+def CDD_plots(fn=''):
+	# Can also ask for the path using the following:
+	# fn = cf.request_input_path(prompt='Please enter the path to an arbitray {} file'.format(task))
+	df = pd.read_csv(fn,index_col=0)
+	# filter out modeled data at the boundary
+	df = df.loc[(df['kappa']<7) & (df['kappa']>0.01)]
+	df = df.loc[(df['gamma']<5)]
+
+	# kappa versus gamma
+	x,y = df['gamma'],np.log(df['kappa'])
+	ax,ax_histx,ax_histy = setup_fig_ax();
+	scatter_hist(x,y,ax,ax_histx,ax_histy, 
+		xlabel=r'$\gamma$ - inverse temperate (noise)',
+		ylabel=r'$\log \kappa$ - discount rate',
+		title=os.path.basename(fn).replace('.csv',''))
+
+	# R^2 versus gamma
+	x,y = df['gamma'],df['R2']
+	ax,ax_histx,ax_histy = setup_fig_ax();
+	scatter_hist(x,y,ax,ax_histx,ax_histy, 
+		xlabel=r'$\gamma$ - inverse temperate (noise)',
+		ylabel=r'$R^2$ - coefficient of determination',
+		title=os.path.basename(fn).replace('.csv',''))
+
+	# kappa versus R^2
+	x,y = df['R2'],np.log(df['kappa'])
+	ax,ax_histx,ax_histy = setup_fig_ax();
+	scatter_hist(x,y,ax,ax_histx,ax_histy, 
+		xlabel=r'$R^2$ - coefficient of determination',
+		ylabel=r'$\log \kappa$ - discount rate',
+		title=os.path.basename(fn).replace('.csv',''))
+
+
+def CRDM_plots():
+
+	fn = '/Users/pizarror/mturk/idm_data/batch_output/raw/raw_CRDM_analysis.csv'
+	# Can also ask for the path using the following:
+	# fn = cf.request_input_path(prompt='Please enter the path to an arbitray {} file'.format(task))
+	df = pd.read_csv(fn,index_col=0)
+	# filter out modeled data at the boundary
+	df = df.loc[(df['alpha']>0.125)]
+	df = df.loc[(df['gamma']<5)]
+
+	# alpha versus gamma
+	x,y = df['gamma'],np.log(df['alpha'])
+	ax,ax_histx,ax_histy = setup_fig_ax();
+	scatter_hist(x,y,ax,ax_histx,ax_histy, 
+		xlabel=r'$\gamma$ - inverse temperate (noise)',
+		ylabel=r'$\log \alpha$ - risk attitude',
+		title=os.path.basename(fn).replace('.csv',''))
+
+	# R^2 versus gamma
+	x,y = df['gamma'],df['R2']
+	ax,ax_histx,ax_histy = setup_fig_ax();
+	scatter_hist(x,y,ax,ax_histx,ax_histy, 
+		xlabel=r'$\gamma$ - inverse temperate (noise)',
+		ylabel=r'$R^2$ - coefficient of determination',
+		title=os.path.basename(fn).replace('.csv',''))
+
+	# alpha versus R^2
+	x,y = df['R2'],np.log(df['alpha'])
+	ax,ax_histx,ax_histy = setup_fig_ax();
+	scatter_hist(x,y,ax,ax_histx,ax_histy, 
+		xlabel=r'$R^2$ - coefficient of determination',
+		ylabel=r'$\log \alpha$ - risk attitude',
+		title=os.path.basename(fn).replace('.csv',''))
+
 
 def main():
-	print('Welcome to parameters visualization, lets get started')
 
+
+	print('Welcome to parameters visualization, lets get started')
+	# We will start with CDD_analysis.csv for now
+	fn = '/Users/pizarror/mturk/idm_data/batch_output/raw/raw_CDD_analysis.csv'
+	CDD_plots(fn)
+	
+	fn = '/Users/pizarror/mturk/idm_data/batch_output/raw/raw_CDD_analysis_alpha.csv'
+	CDD_plots(fn)
+	
+	CRDM_plots()
+
+	plt.show()
 
 
 if __name__ == "__main__":
