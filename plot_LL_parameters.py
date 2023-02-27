@@ -5,7 +5,6 @@ import pickle
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import shared_core.common_functions as cf
-# from shared_core.common_functions import request_input_path
 
 # getting the name of the directory
 # where the this file is present.
@@ -131,7 +130,7 @@ def simulate_estimate_CRDM_model(index,fn,gamma0,alpha0,beta0,verbose=False):
 def range_variables(v1_bound,v2_bound,nb_samples=100):
 
 	v1 = np.linspace(v1_bound[0], v1_bound[1], num=nb_samples).tolist()
-	v2 = np.linspace(v2_bound[0], v2_bound[1], num=2*nb_samples).tolist()
+	v2 = np.linspace(v2_bound[0], v2_bound[1], num=nb_samples).tolist()
 	return v1,v2
 
 
@@ -152,8 +151,8 @@ def plot_ground_hat(v1_ground,v2_ground,v1_hat,v2_hat):
 		plt.ylabel(r'$\kappa_{estimate}$',fontsize=12)
 	plt.legend(loc='center left',bbox_to_anchor=(1, 0.5))
 	plt.tight_layout()
-	plt.show()
-	sys.exit()
+	# plt.show()
+	# sys.exit()
 
 
 def simulate_v1_v2(task='CDD',fn='',v1_bound=[0,8],v2_bound=[1e-3,8],v_fixed=1.0,nb_samples=50):
@@ -240,7 +239,7 @@ def simulate_CRDM(nb_samples=50):
 	
 def main():
 	# For some reason I cannot run these together, I have to run for one task, save, and rerun script
-	nb_samples=5
+	nb_samples=20
 
 	simulate_CDD(nb_samples=nb_samples)
 	# simulate_CRDM(nb_samples=nb_samples)
