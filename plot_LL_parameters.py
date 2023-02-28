@@ -225,8 +225,8 @@ def simulate_CDD(nb_samples=50):
 	# kappa = np.log(kappa)
 	plot_save_3D(gamma,kappa,negLL,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples,verbose=False)
 
-	# fn='estimates/kaLL.npy'
-	# save_to_numpy(fn,gamma,kappa,negLL)
+	fn='estimates/kaLL.npy'
+	save_to_numpy(fn,gamma,kappa,negLL)
 
 def simulate_CRDM(nb_samples=50):
 	task='CRDM'
@@ -234,7 +234,7 @@ def simulate_CRDM(nb_samples=50):
 	CRDM_fn = '/Users/pizarror/mturk/idm_data/batch_output/bonus2/idm_2022-12-08_14h39.52.884/crdm/idm_2022-12-08_14h39.52.884_crdm.csv'
 	# CRDM_fn = cf.request_input_path(prompt='Please enter the path to an arbitray {} file'.format(task))
 
-	# Second simulation, fix alpha to 1.0 and vary gamma and kappa
+	# Second simulation, fix beta to 0.8 and vary gamma and alpha
 	beta0 = 0.8
 	# bounds for gamma and alpha
 	gamma_bound = [0,8]
@@ -243,8 +243,8 @@ def simulate_CRDM(nb_samples=50):
 	gamma,alpha,negLL = simulate_v1_v2(task=task,fn=CRDM_fn,v1_bound=gamma_bound,v2_bound=alpha_bound,v_fixed=beta0,nb_samples=nb_samples)
 	plot_save_3D(gamma,alpha,negLL,xlabel='gamma',ylabel='alpha',zlabel='negative log-likelihood',nb_samples=nb_samples,verbose=False)
 	
-	# fn='estimates/gaLL.npy'
-	# save_to_numpy(fn,gamma,kappa,negLL)
+	fn='estimates/gaLL.npy'
+	save_to_numpy(fn,gamma,kappa,negLL)
 	
 def main():
 	# For some reason I cannot run these together, I have to run for one task, save, and rerun script
