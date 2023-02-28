@@ -53,7 +53,7 @@ def simulate_estimate_CDD_model(index,fn,gamma0,kappa0,alpha0,verbose=False):
 	# remove practice trials
 	df = df.loc[df['cdd_trial_type']=='task']
 	# insert probability as choice into data
-	cols = ['cdd_trial_resp.corr','cdd_immed_amt','cdd_immed_wait','cdd_delay_amt','cdd_delay_wait','alpha']
+	cols = ['cdd_trial_resp.corr','cdd_immed_amt','cdd_delay_amt','cdd_immed_wait','cdd_delay_wait','alpha']
 	# also returns percent_reward which we do not need here
 	data = mf.get_data(df,cols,alpha_hat=alpha0)[0]
 
@@ -61,24 +61,31 @@ def simulate_estimate_CDD_model(index,fn,gamma0,kappa0,alpha0,verbose=False):
 	p_choose_reward,SV_null,SV_reward = mf.probability_choice([gamma0,kappa0],data['cdd_immed_amt'],data['cdd_delay_amt'],
 		time_null=data['cdd_immed_wait'],time_reward=data['cdd_delay_wait'],alpha=data['alpha'],task='cdd')
 	# print(np.around(np.array(prob_choice)))
+
 	p_array = np.array(p_choose_reward)
-	rand_array = np.random.normal(0.0,0.2,p_array.shape)
-	choice = np.around(p_array)#+rand_array)
-	choice[choice==2]=1
+	rand_array = np.random.normal(0.0,0.1,p_array.shape)
+	choice = np.around(p_array+rand_array)
+	choice[choice==2]=1 
 	choice[choice==-1]=0
 	data['cdd_trial_resp.corr'] = choice
+
+	# sorted for plotting
+	SV_delta = [rew-null for (rew,null) in zip(SV_reward,SV_null)]
+	# print(choice)
+	SV_delta, p_choose_reward,choice = (list(t) for t in zip(*sorted(zip(SV_delta, p_choose_reward,choice))))
 
 	# estimate parameters based on self-generated data
 	gk_guess = [0.15, 0.005]
 	gk_bounds = ((0,6),(0.0022,0.368))
+	# print(data)
+	# sys.exit()
 	negLL,gamma_hat,kappa_hat = mf.fit_computational_model(data,guess=gk_guess,bounds=gk_bounds,disp=verbose)
 	print('Kappa Hat : {}'.format(kappa_hat))
 
-	# sorted for plotting
-	SV_delta = [rew-null for (rew,null) in zip(SV_reward,SV_null)]	
-	SV_delta, p_choose_reward = zip(*sorted(zip(SV_delta, p_choose_reward)))
-	plt = mf.plot_fit(index,SV_delta,p_choose_reward,choice=data['cdd_trial_resp.corr'].tolist(),ylabel='prob_choose_delay',xlabel='SV difference (SV_delay - SV_immediate)',
+	plt = mf.plot_fit(index,SV_delta,p_choose_reward,choice=choice,ylabel='prob_choose_delay',xlabel='SV difference (SV_delay - SV_immediate)',
 		title=r'$\gamma={0:0.3f}, \kappa={1:0.3f}$'.format(gamma0,kappa0))
+	# plt.plot(SV_delta,p_choose_reward,'g^:',linewidth=0.5)
+	# sys.exit()
 	print('Kappa Hat : {}'.format(kappa_hat))
 	textstr = r'$(\hat \gamma,\hat \kappa) : ({0:0.3f},{1:0.3f})$'.format(gamma_hat,kappa_hat)
 	# these are matplotlib.patch.Patch properties
@@ -207,10 +214,10 @@ def simulate_CDD(nb_samples=50):
 	# First simulation, fix alpha to 1.0 and vary gamma and kappa
 	alpha0 = 1
 	# bounds for gamma and kappa : (noise and discount rate)
-	gamma_bound = [0,5]
+	gamma_bound = [0.01,5]
 	# range for ln(discount_rate) : [-6,-1]
 	# kappa_bound = [0.0022,0.368]
-	log_discount_rate_bound = [-6,-1]
+	log_discount_rate_bound = [-6,-2]
 	
 	gamma,kappa,negLL = simulate_v1_v2(task=task,fn=CDD_fn,v1_bound=gamma_bound,v2_bound=log_discount_rate_bound,v_fixed=alpha0,nb_samples=nb_samples)
 	# kappa = np.log(kappa)
