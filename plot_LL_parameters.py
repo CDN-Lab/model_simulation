@@ -64,7 +64,9 @@ def simulate_estimate_CDD_model(index,fn,gamma0,kappa0,alpha0,verbose=False):
 
 	p_array = np.array(p_choose_reward)
 	rand_array = np.random.normal(0.0,0.1,p_array.shape)
-	choice = np.around(p_array+rand_array)
+	bar = np.random.uniform(0,1,p_array.shape)
+	# choice = np.around(p_array)#+rand_array)
+	choice = p_array > bar
 	choice[choice==2]=1 
 	choice[choice==-1]=0
 	data['cdd_trial_resp.corr'] = choice
@@ -214,10 +216,10 @@ def simulate_CDD(nb_samples=50):
 	# First simulation, fix alpha to 1.0 and vary gamma and kappa
 	alpha0 = 1
 	# bounds for gamma and kappa : (noise and discount rate)
-	gamma_bound = [0.01,5]
+	gamma_bound = [0,8]
 	# range for ln(discount_rate) : [-6,-1]
 	# kappa_bound = [0.0022,0.368]
-	log_discount_rate_bound = [-6,-2]
+	log_discount_rate_bound = [-8,1]
 	
 	gamma,kappa,negLL = simulate_v1_v2(task=task,fn=CDD_fn,v1_bound=gamma_bound,v2_bound=log_discount_rate_bound,v_fixed=alpha0,nb_samples=nb_samples)
 	# kappa = np.log(kappa)
@@ -246,7 +248,7 @@ def simulate_CRDM(nb_samples=50):
 	
 def main():
 	# For some reason I cannot run these together, I have to run for one task, save, and rerun script
-	nb_samples=20
+	nb_samples=50
 
 	simulate_CDD(nb_samples=nb_samples)
 	# simulate_CRDM(nb_samples=nb_samples)
