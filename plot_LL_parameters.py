@@ -63,7 +63,7 @@ def simulate_estimate_CDD_model(index,fn,gamma0,kappa0,alpha0,verbose=False):
 	# print(np.around(np.array(prob_choice)))
 	p_array = np.array(p_choose_reward)
 	rand_array = np.random.normal(0.0,0.2,p_array.shape)
-	choice = np.around(p_array+rand_array)
+	choice = np.around(p_array)#+rand_array)
 	choice[choice==2]=1
 	choice[choice==-1]=0
 	data['cdd_trial_resp.corr'] = choice
