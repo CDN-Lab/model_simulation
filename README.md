@@ -148,6 +148,8 @@ This means that we can model with the following ranges for $\alpha=[0.125,4.341]
 ### Confidence Risky Decision Making (CRDM) - ambiguity aversion, $\beta$
 
 <img src="./README_files/risk_ambig_scheme.jpg" alt="Risk and Ambiguity task" />
+
+
 The red rectangle indicates the probability $p$, of not winning; the green rectangle indicates the probability $p$, of winning the lottery; and gray is the ambiguous proportion $A$, that is concealed. The sum of these probabilites need to sum up to unity. That is: $2p + A = 1.0$, meaning that we can write $p$ in terms of $A$ as $p = (1.0 - A)/2$.
 
 Now we return to the SV formula for taking the lottery and make a bound $[0.0,1.0]$ on probability of choice for the subject, with ambiguity, i.e., $A>0$. We also plug in the formula for $p$ in terms of $A$ derived above:
