@@ -7,7 +7,7 @@ This is a summary of the simulation results, to share with the CDN lab. These re
 
 We used the choice set space defined by the experiments to determine possible values for the modeling parameters. We computed the parameter value that would allow us to model extreme values in the choice set space. That is, we should be able to model a subject whose indifference point is located on either corner of the choice set space. In Confidence Delay Decision (CDD) this translates to the most/least patient person in the sample. In Confidence Risky Decision Making (CRDM), this translates to the most/least risky person in the sample. To find the indifference point, we equate the subjective values (SV) for the two choices in the two tasks and compute the model parameters. 
 
-<img src="./figs/choice_set_space.png" alt="Choice Set Space" />
+<img src="./README_files/choice_set_space.png" alt="Choice Set Space" />
 
 
 ### Confidence Delay Decision (CDD) - discount parameters, $\kappa$
@@ -147,7 +147,7 @@ This means that we can model with the following ranges for $\alpha=[0.125,4.341]
 
 ### Confidence Risky Decision Making (CRDM) - ambiguity aversion, $\beta$
 
-<img src="./figs/risk_ambig_scheme.jpg" alt="Risk and Ambiguity task" />
+<img src="./README_files/risk_ambig_scheme.jpg" alt="Risk and Ambiguity task" />
 The red rectangle indicates the probability $p$, of not winning; the green rectangle indicates the probability $p$, of winning the lottery; and gray is the ambiguous proportion $A$, that is concealed. The sum of these probabilites need to sum up to unity. That is: $2p + A = 1.0$, meaning that we can write $p$ in terms of $A$ as $p = (1.0 - A)/2$.
 
 Now we return to the SV formula for taking the lottery and make a bound $[0.0,1.0]$ on probability of choice for the subject, with ambiguity, i.e., $A>0$. We also plug in the formula for $p$ in terms of $A$ derived above:
