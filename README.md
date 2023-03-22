@@ -150,18 +150,13 @@ This means that we can model with the following ranges for $\alpha=[0.125,4.341]
 <img src="./README_files/risk_ambig_scheme.jpg" alt="Risk and Ambiguity task" />
 
 
-The red rectangle indicates the probability $p$, of not winning; the green rectangle indicates the probability $p$, of winning the lottery; and gray is the ambiguous proportion $A$, that is concealed. The sum of these probabilites need to sum up to unity. That is: $2p + A = 1.0$, meaning that we can write $p$ in terms of $A$ as $p = (1.0 - A)/2$.
-
-Now we return to the SV formula for taking the lottery and make a bound $[0.0,1.0]$ on probability of choice for the subject, with ambiguity, i.e., $A>0$. We also plug in the formula for $p$ in terms of $A$ derived above:
-
+Now we use the SV formula for taking the lottery and make a bound $[0.0,1.0]$ on probability of choice for the subject, with ambiguity, i.e., $A>0$. We set the baseline probability centered at $p=0.5$:
 
 $$
 \begin{align}
 0 < p - \beta\frac{A}{2} &< 1.0 \\
-0 < \frac{1-A}{2} - \beta\frac{A}{2} &< 1.0 \\ 
-0 < \frac{1-A-\beta A}{2} &< 1.0 \\ 
-0 < \frac{1-A(1+\beta)}{2} &< 1.0 \\ 
-0 < 1-A(1+\beta) &< 2.0 \\ 
+0 < \frac{1}{2} - \beta\frac{A}{2} &< 1.0 \\
+0 < 1 - \beta A &< 2.0 \\ 
 \end{align}
 $$
 
@@ -169,9 +164,9 @@ The left inequality places an upper bound on beta as follows:
 
 $$
 \begin{align}
-0 &< 1 - A(1+\beta) \\ 
-A(1+\beta) &< 1 \\
-\beta &< -1 + \frac{1}{A}
+0 &< 1 - \beta A \\ 
+\beta A &< 1 \\
+\beta &< \frac{1}{A}
 \end{align}
 $$
 
@@ -179,10 +174,9 @@ The right inequality places a lower bound on beta as follows:
 
 $$
 \begin{align}
-1 - A(1+\beta) &< 2.0\\ 
--1 &< A(1+\beta) \\
-\frac{-1}{A} &< 1+\beta \\
--1 - \frac{1}{A} &< \beta \\
+1 - \beta A &< 2.0\\ 
+-1 &< \beta A\\ 
+\frac{-1}{A} &< \beta \\ 
 \end{align}
 $$
 
@@ -199,40 +193,40 @@ print(df_beta)
 ```
 
         beta_top  beta_bottom  crdm_amb_lev  crdm_lott_amt  crdm_lott_p
-    0   0.351351    -2.351351          74.0           40.0         50.0
-    27  0.351351    -2.351351          74.0            5.0         50.0
-    26  0.351351    -2.351351          74.0           20.0         50.0
-    24  0.351351    -2.351351          74.0            8.0         50.0
-    20  0.351351    -2.351351          74.0            5.0         50.0
-    17  0.351351    -2.351351          74.0           50.0         50.0
-    16  0.351351    -2.351351          74.0           50.0         50.0
-    12  0.351351    -2.351351          74.0            8.0         50.0
-    30  0.351351    -2.351351          74.0           40.0         50.0
-    2   0.351351    -2.351351          74.0           20.0         50.0
-    8   0.351351    -2.351351          74.0           40.0         50.0
-    9   1.000000    -3.000000          50.0           20.0         50.0
-    28  1.000000    -3.000000          50.0           20.0         50.0
-    1   1.000000    -3.000000          50.0            8.0         50.0
-    23  1.000000    -3.000000          50.0            5.0         50.0
-    21  1.000000    -3.000000          50.0            5.0         50.0
-    4   1.000000    -3.000000          50.0            8.0         50.0
-    18  1.000000    -3.000000          50.0           50.0         50.0
-    15  1.000000    -3.000000          50.0           40.0         50.0
-    13  1.000000    -3.000000          50.0           40.0         50.0
-    5   1.000000    -3.000000          50.0           50.0         50.0
-    6   3.166667    -5.166667          24.0            8.0         50.0
-    29  3.166667    -5.166667          24.0            5.0         50.0
-    14  3.166667    -5.166667          24.0           50.0         50.0
-    22  3.166667    -5.166667          24.0            5.0         50.0
-    3   3.166667    -5.166667          24.0           40.0         50.0
-    25  3.166667    -5.166667          24.0           40.0         50.0
-    7   3.166667    -5.166667          24.0           50.0         50.0
-    11  3.166667    -5.166667          24.0            8.0         50.0
-    10  3.166667    -5.166667          24.0           20.0         50.0
-    19  3.166667    -5.166667          24.0           20.0         50.0
+    0   1.351351    -1.351351          74.0           40.0         50.0
+    27  1.351351    -1.351351          74.0            5.0         50.0
+    26  1.351351    -1.351351          74.0           20.0         50.0
+    24  1.351351    -1.351351          74.0            8.0         50.0
+    20  1.351351    -1.351351          74.0            5.0         50.0
+    17  1.351351    -1.351351          74.0           50.0         50.0
+    16  1.351351    -1.351351          74.0           50.0         50.0
+    12  1.351351    -1.351351          74.0            8.0         50.0
+    30  1.351351    -1.351351          74.0           40.0         50.0
+    2   1.351351    -1.351351          74.0           20.0         50.0
+    8   1.351351    -1.351351          74.0           40.0         50.0
+    9   2.000000    -2.000000          50.0           20.0         50.0
+    28  2.000000    -2.000000          50.0           20.0         50.0
+    1   2.000000    -2.000000          50.0            8.0         50.0
+    23  2.000000    -2.000000          50.0            5.0         50.0
+    21  2.000000    -2.000000          50.0            5.0         50.0
+    4   2.000000    -2.000000          50.0            8.0         50.0
+    18  2.000000    -2.000000          50.0           50.0         50.0
+    15  2.000000    -2.000000          50.0           40.0         50.0
+    13  2.000000    -2.000000          50.0           40.0         50.0
+    5   2.000000    -2.000000          50.0           50.0         50.0
+    6   4.166667    -4.166667          24.0            8.0         50.0
+    29  4.166667    -4.166667          24.0            5.0         50.0
+    14  4.166667    -4.166667          24.0           50.0         50.0
+    22  4.166667    -4.166667          24.0            5.0         50.0
+    3   4.166667    -4.166667          24.0           40.0         50.0
+    25  4.166667    -4.166667          24.0           40.0         50.0
+    7   4.166667    -4.166667          24.0           50.0         50.0
+    11  4.166667    -4.166667          24.0            8.0         50.0
+    10  4.166667    -4.166667          24.0           20.0         50.0
+    19  4.166667    -4.166667          24.0           20.0         50.0
 
 
-This means that we can model with the following ranges for $\beta=[-5.167,3.167]$
+This means that we can model with the following ranges for $\beta=[-4.167,4.167]$
 
 
 ## Principled method
