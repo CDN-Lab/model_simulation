@@ -203,9 +203,9 @@ def simulate_v1_v2(task='CDD',fn='',v1_bound=[0,8],v2_bound=[1e-3,8],v_fixed=1.0
 
 def save_to_numpy(fn,gamma,kappa,negLL):
 	with open(fn, 'wb') as f:
-	    np.save(f, gamma)
-	    np.save(f, kappa)
-	    np.save(f, negLL)
+		np.save(f, gamma)
+		np.save(f, kappa)
+		np.save(f, negLL)
 
 def simulate_CDD(nb_samples=50):
 	task='CDD'
@@ -217,6 +217,7 @@ def simulate_CDD(nb_samples=50):
 	alpha0 = 1
 	# bounds for gamma and kappa : (noise and discount rate)
 	gamma_bound = [0,8]
+	# choice set space kappa = [0.0022,7.8750]
 	# range for ln(discount_rate) : [-6,-1]
 	# kappa_bound = [0.0022,0.368]
 	log_discount_rate_bound = [-8,1]
@@ -225,7 +226,7 @@ def simulate_CDD(nb_samples=50):
 	# kappa = np.log(kappa)
 	plot_save_3D(gamma,kappa,negLL,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples,verbose=False)
 
-	fn='estimates/kaLL.npy'
+	fn='estimates/cdd_gkLL.npy'
 	save_to_numpy(fn,gamma,kappa,negLL)
 
 def simulate_CRDM(nb_samples=50):
@@ -235,6 +236,7 @@ def simulate_CRDM(nb_samples=50):
 	# CRDM_fn = cf.request_input_path(prompt='Please enter the path to an arbitray {} file'.format(task))
 
 	# Second simulation, fix beta to 0.8 and vary gamma and alpha
+	# beta_bound = [-4.167,4.167]
 	beta0 = 0.8
 	# bounds for gamma and alpha
 	gamma_bound = [0,8]
@@ -243,15 +245,15 @@ def simulate_CRDM(nb_samples=50):
 	gamma,alpha,negLL = simulate_v1_v2(task=task,fn=CRDM_fn,v1_bound=gamma_bound,v2_bound=alpha_bound,v_fixed=beta0,nb_samples=nb_samples)
 	plot_save_3D(gamma,alpha,negLL,xlabel='gamma',ylabel='alpha',zlabel='negative log-likelihood',nb_samples=nb_samples,verbose=False)
 	
-	fn='estimates/gaLL.npy'
-	save_to_numpy(fn,gamma,kappa,negLL)
+	fn='estimates/crdm_gaLL.npy'
+	save_to_numpy(fn,gamma,alpha,negLL)
 	
 def main():
 	# For some reason I cannot run these together, I have to run for one task, save, and rerun script
 	nb_samples=50
 
-	simulate_CDD(nb_samples=nb_samples)
-	# simulate_CRDM(nb_samples=nb_samples)
+	# simulate_CDD(nb_samples=nb_samples)
+	simulate_CRDM(nb_samples=nb_samples)
 
 
 
