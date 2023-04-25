@@ -92,7 +92,7 @@ end
 Z = reshape(negLLArray,100,100);
 surf(metaUncArray,confCritArray,Z);
 title("NLL vs (Meta-Uncertainty, Confidence Criterion)");
-xlabel("Meta-Uncertainty"), ylabel("Confidence Criterion"), zlabel("NLL");
+xlabel("log(Meta-Uncertainty)"), ylabel("Confidence Criterion"), zlabel("NLL");
 
 
 function [NLL] = giveNLL(paramVec, stimValue, nChoice, calcPrecision, asymFlag)
