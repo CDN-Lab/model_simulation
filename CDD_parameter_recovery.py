@@ -48,68 +48,11 @@ def plot_save_3D(X,Y,Z,xlabel='',ylabel='',zlabel='',nb_samples=50,verbose=False
 
 
 
-def simulate_estimate_CDD_model(index,fn,gamma0,kappa0,alpha0,verbose=False):
-	df = pd.read_csv(fn)
-	# remove practice trials
-	df = df.loc[df['cdd_trial_type']=='task']
-	# insert probability as choice into data
-	cols = ['cdd_trial_resp.corr','cdd_immed_amt','cdd_delay_amt','cdd_immed_wait','cdd_delay_wait','alpha']
-	# also returns percent_reward which we do not need here
-	data = mf.get_data(df,cols,alpha_hat=alpha0)[0]
-
-	# generate probability based on gamma,kappa then threshold at 0.5 to generate choice
-	p_choose_reward,SV_null,SV_reward = mf.probability_choice([gamma0,kappa0],data['cdd_immed_amt'],data['cdd_delay_amt'],
-		time_null=data['cdd_immed_wait'],time_reward=data['cdd_delay_wait'],alpha=data['alpha'],task='cdd')
-	# print(np.around(np.array(prob_choice)))
-
-	p_array = np.array(p_choose_reward)
-	# rand_array = np.random.normal(0.0,0.1,p_array.shape)
-	bar = np.random.uniform(0,1,p_array.shape)
-	# choice = np.around(p_array)#+rand_array)
-	choice = p_array > bar
-	choice[choice==2]=1 
-	choice[choice==-1]=0
-	data['cdd_trial_resp.corr'] = choice
-
-	# sorted for plotting
-	SV_delta = [rew-null for (rew,null) in zip(SV_reward,SV_null)]
-	# print(choice)
-	SV_delta, p_choose_reward,choice = (list(t) for t in zip(*sorted(zip(SV_delta, p_choose_reward,choice))))
-
+def estimate_NLL_CDD_model(data,gamma0,kappa0):
 	# estimate parameters based on self-generated data
-	gk_guess = [0.15, 0.005]
-	gk_bounds = ((0,6),(0.0022,0.368))
-	# print(data)
-	# sys.exit()
-	negLL,gamma_hat,kappa_hat = mf.fit_computational_model(data,guess=gk_guess,bounds=gk_bounds,disp=verbose)
-	print('Kappa Hat : {}'.format(kappa_hat))
-
-	plt = mf.plot_fit(index,SV_delta,p_choose_reward,choice=choice,ylabel='prob_choose_delay',xlabel='SV difference (SV_delay - SV_immediate)',
-		title=r'$\gamma={0:0.3f}, \kappa={1:0.3f}$'.format(gamma0,kappa0))
-	# plt.plot(SV_delta,p_choose_reward,'g^:',linewidth=0.5)
-	# sys.exit()
-	print('Kappa Hat : {}'.format(kappa_hat))
-	textstr = r'$(\hat \gamma,\hat \kappa) : ({0:0.3f},{1:0.3f})$'.format(gamma_hat,kappa_hat)
-	# these are matplotlib.patch.Patch properties
-	props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-	# place a text box in upper left in axes coords
-	xpos = 0.5*(max(SV_delta) - min(SV_delta)) + min(SV_delta)
-	plt.text(xpos, 0.8, textstr, fontsize=14,verticalalignment='top', bbox=props)
-
-	model_sim_dir = '/Users/pizarror/mturk/model_simulation/figs/choice_fit'	
-	cf.make_dir(model_sim_dir)
-	fig_fn = os.path.join(model_sim_dir,'gamma_{0:0.4f}_kappa_{1:0.4f}.png'.format(gamma0,kappa0))
-	plt.savefig(fig_fn)
-	print('Saving to : {}'.format(fig_fn))
-	plt.close(index)
-
-	print('Kappa Hat : {}'.format(kappa_hat))
-	print('Ground truth for (gamma,kappa) : ({},{})'.format(gamma0,kappa0))
-	print('Estimated values (gamma,kappa) : ({},{})'.format(gamma_hat,kappa_hat))
-	if verbose:
-		print(data)
-		print("Negative log-likelihood: {}, gamma: {}, kappa: {}". format(negLL, gamma_hat, kappa_hat))
-	return negLL,gamma_hat,kappa_hat
+	parms=[gamma0,kappa0]
+	negLL = mf.function_negLL(parms,data)
+	return negLL
 
 def simulate_estimate_CRDM_model(index,fn,gamma0,alpha0,beta0,verbose=False):
 	df = pd.read_csv(fn)
@@ -212,9 +155,36 @@ def plot_ground_hat(v1_ground,v2_ground,v1_hat,v2_hat):
 	# plt.show()
 	# sys.exit()
 
+def simulate_data(fn,alpha0,gamma0,kappa0):
+	df = pd.read_csv(fn)
+	# remove practice trials
+	df = df.loc[df['cdd_trial_type']=='task']
+	# insert probability as choice into data
+	cols = ['cdd_trial_resp.corr','cdd_immed_amt','cdd_delay_amt','cdd_immed_wait','cdd_delay_wait','alpha']
+	# also returns percent_reward which we do not need here
+	data = mf.get_data(df,cols,alpha_hat=alpha0)[0]
+
+	# generate probability based on gamma,kappa then threshold at 0.5 to generate choice
+	p_choose_reward,SV_null,SV_reward = mf.probability_choice([gamma0,kappa0],data['cdd_immed_amt'],data['cdd_delay_amt'],
+		time_null=data['cdd_immed_wait'],time_reward=data['cdd_delay_wait'],alpha=data['alpha'],task='cdd')
+	# print(np.around(np.array(prob_choice)))
+
+	p_array = np.array(p_choose_reward)
+	# rand_array = np.random.normal(0.0,0.1,p_array.shape)
+	bar = np.random.uniform(0,1,p_array.shape)
+	# choice = np.around(p_array)#+rand_array)
+	choice = p_array > bar
+	choice[choice==2]=1 
+	choice[choice==-1]=0
+	data['cdd_trial_resp.corr'] = choice
+
+	return data
 
 def simulate_v1_v2(task='CDD',fn='',v1_bound=[0,8],v2_bound=[1e-3,8],v_fixed=1.0,nb_samples=50):
 	# nb_samples is number of samples for each variable
+
+	# simulate data
+	data = simulate_data(fn,alpha0=1,gamma0=0.8,kappa0=0.5)
 
 	# prepare the variables to range and negLL matrix for storing values
 	var1,var2 = range_variables(v1_bound,v2_bound,nb_samples=nb_samples)
@@ -235,7 +205,7 @@ def simulate_v1_v2(task='CDD',fn='',v1_bound=[0,8],v2_bound=[1e-3,8],v_fixed=1.0
 					print(iv1,iv2,v2)
 					v1_ground[iv1,iv2] = v1
 					v2_ground[iv1,iv2] = v2
-					negLL[iv1,iv2],v1_hat[iv1,iv2],v2_hat[iv1,iv2] = simulate_estimate_CDD_model(index,fn,v1,v2,v_fixed)
+					negLL[iv1,iv2],v1_hat[iv1,iv2],v2_hat[iv1,iv2] = estimate_NLL_CDD_model(index,data,v1,v2,v_fixed)
 					index += 1
 		plot_ground_hat(v1_ground,v2_ground,v1_hat,v2_hat)
 	elif 'CRDM' in task:
@@ -308,8 +278,8 @@ def main():
 	# For some reason I cannot run these together, I have to run for one task, save, and rerun script
 	nb_samples=50
 
-	# simulate_CDD(nb_samples=nb_samples)
-	simulate_CRDM(nb_samples=nb_samples)
+	simulate_CDD(nb_samples=nb_samples)
+	# simulate_CRDM(nb_samples=nb_samples)
 
 
 
