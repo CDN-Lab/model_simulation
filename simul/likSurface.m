@@ -28,11 +28,11 @@ logLikelihoodSurface = zeros(length(param(:,1)),length(param(:,2)),length(param(
 for i=1:length(param(:,1))
     for j=1:length(param(:,2))
         for k=1:length(param(:,3))
-        alpha = param(i,1);
-        kappa = param(j,2);
-        beta = param(k,3);
-        [info] = local_negLL(sData,v1,d1,v2,d2,alpha,kappa,beta);
-        logLikelihoodSurface(i,j,k) = info.LL;
+            alpha = param(i,1);
+            kappa = param(j,2);
+            beta = param(k,3);
+            [info] = local_negLL(sData,v1,d1,v2,d2,alpha,kappa,beta);
+            logLikelihoodSurface(i,j,k) = info.LL;
         end
     end
 end
