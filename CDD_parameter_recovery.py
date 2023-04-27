@@ -21,22 +21,55 @@ sys.path.append(parent)
 from IDM_model.src import model_functions as mf
 
 
-def plot_save_3D(X,Y,Z,c0,c_hat,xlabel='',ylabel='',zlabel='',nb_samples=50,verbose=False):
-	fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-	print(c_hat)
-	print(c0)
+def plot_save_3D(Xlin,Ylin,Z,c0,c_hat,xlabel='',ylabel='',zlabel='',nb_samples=50,verbose=False):
+	print('coordinates of ground truth : {}'.format(c0))
+	print('coordinates of estimate : {}'.format(c_hat))
 	# Plot the surface.
-	Xmesh, Ymesh = np.meshgrid(X, Y)
+	X, Y = np.meshgrid(Xlin, Ylin,indexing='ij')
 	print('ground truth')
-	print(X[c0[0]], Y[c0[1]], Z[c0[0],c0[1]])
+	print(Xlin[c0[0]], Ylin[c0[1]], Z[c0[0],c0[1]])
 	print('estimate')
-	print(X[c_hat[0]], Y[c_hat[1]], Z[c_hat[0],c_hat[1]])
-	ax.plot_surface(Xmesh, Ymesh, Z, cmap=cm.coolwarm,linewidth=0, antialiased=False)
-	ax.scatter(Xmesh[c0[0],c0[1]], Ymesh[c0[0],c0[1]], Z[c0[0],c0[1]], c='blue', marker='+', s=500)
-	ax.scatter(Xmesh[c_hat[0],c_hat[1]], Ymesh[c_hat[0],c_hat[1]], Z[c_hat[0],c_hat[1]], c='red', marker='*', s=1000)
+	print(Xlin[c_hat[0]], Ylin[c_hat[1]], Z[c_hat[0],c_hat[1]])
+
+	# fig = plt.figure()
+	# ax = fig.gca(projection='3d')
+	fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+	ax.plot_surface(X, Y, Z, rstride=8, cstride=8, alpha=0.3)
+	ax.scatter(X[c0[0],c0[1]], Y[c0[0],c0[1]], Z[c0[0],c0[1]], c='green', marker='^', s=100)
+	# ax.scatter(X[c_hat[0],c_hat[1]], Y[c_hat[0],c_hat[1]], Z[c_hat[0],c_hat[1]], c='black', marker='*', s=1000)
+	cset = ax.contour(X, Y, Z, zdir='z', offset=-100, cmap=cm.coolwarm)
+	cset = ax.contour(X, Y, Z, zdir='x', offset=-1, cmap=cm.coolwarm)
+	cset = ax.contour(X, Y, Z, zdir='y', offset=1, cmap=cm.coolwarm)
+
+	# calc index of min/max Z value
+	xmin, ymin = np.unravel_index(np.argmin(Z), Z.shape)
+	xmax, ymax = np.unravel_index(np.argmax(Z), Z.shape)
+
+	# min max points in 3D space (x,y,z)
+	mi = (X[xmin,ymin], Y[xmin,ymin], Z.min())
+	ma = (X[xmax, ymax], Y[xmax, ymax], Z.max())
+
+	# Arrays for plotting, 
+	# first row for points in xplane, last row for points in 3D space
+	Ami = np.array([mi]*4)
+	Ama = np.array([ma]*4)
+	for i, v in enumerate([-1,1,-100]):
+		Ami[i,i] = v 
+		Ama[i,i] = v 
+
+	#plot points.
+	ax.plot(Ami[:,0], Ami[:,1], Ami[:,2], marker="o", ls="", c=cm.coolwarm(0.))
+	ax.plot(Ama[:,0], Ama[:,1], Ama[:,2], marker="o", ls="", c=cm.coolwarm(1.))
 	plt.xlabel(xlabel)
 	plt.ylabel(ylabel)
 	ax.set_zlabel(zlabel)
+
+	ax.view_init(azim=-45, elev=19)
+	# plt.savefig(__file__+".png")
+	plt.show()
+
+	# fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+	# ax.plot_surface(Xmesh, Ymesh, Z, cmap=cm.hsv,linewidth=0, antialiased=False)	
 
 	# model_sim_dir = '/Users/pizarror/mturk/model_simulation/figs'
 	# pickle_fn = os.path.join(model_sim_dir,'negLL_{}_{}_{}_samples.fig.pickle'.format(xlabel,ylabel,int(nb_samples**2)))
@@ -50,7 +83,6 @@ def plot_save_3D(X,Y,Z,c0,c_hat,xlabel='',ylabel='',zlabel='',nb_samples=50,verb
 		print(">>> figx = pickle.load(open({}, 'rb'))".format(pickle_fn))
 		print('>>> figx.show() for Showing the figure, edit it, etc.!')
 	
-	plt.show()
 
 
 
@@ -126,8 +158,9 @@ def simulate_v1_v2(fn='',v1_0=0.8,v2_0=0.5,v_fixed=1.0,v1_bound=[0,8],v2_bound=[
 	negLL = np.zeros((xsize,ysize))
 	for iv1,v1 in enumerate(var1):
 		for iv2,v2 in enumerate(var2):
-				v2 = np.exp(v2)
+				# v2 = np.exp(v2)
 				negLL[iv1,iv2] = estimate_NLL_model(data,v1,v2)
+				print('index ({0},{1}), parms ({2:0.3f},{3:0.3f}), negLL {4:0.3f}'.format(iv1,iv2,v1,v2,negLL[iv1,iv2]))
 	return var1,var2,negLL
 
 
@@ -152,21 +185,25 @@ def simulate_CDD(nb_samples=50):
 	gamma_bound = [0,8]
 	# choice set space kappa = [0.0022,7.8750]
 	# range for ln(discount_rate) : [-6,-1]
-	# kappa_bound = [0.0022,0.368]
-	log_discount_rate_bound = [-8,1]
+	kappa_bound = [0.00035,0.368]
+	# log_discount_rate_bound = [-8,1]
 	# ground truth
-	gamma0=0.8
-	kappa0=0.5
+	gamma0=4
+	kappa0=0.1
 
-	gamma,kappa,negLL = simulate_v1_v2(fn=CDD_fn,v1_0=gamma0,v2_0=kappa0,v_fixed=alpha0,v1_bound=gamma_bound,v2_bound=log_discount_rate_bound,nb_samples=nb_samples)
+	gamma,kappa,negLL = simulate_v1_v2(fn=CDD_fn,v1_0=gamma0,v2_0=kappa0,v_fixed=alpha0,v1_bound=gamma_bound,v2_bound=kappa_bound,nb_samples=nb_samples)
+	print(gamma)
+	print(kappa)
+	print(negLL)
 	(row,col) = np.where(negLL == np.min(negLL))
 	row0 = find_nearest(gamma,gamma0)
-	col0 = find_nearest(kappa,np.log(kappa0))
+	col0 = find_nearest(kappa,kappa0)
 	coords0 = (row0,col0)
-	print('Ground truth for (gamma,kappa): ({0},{1})'.format(gamma0,np.log(kappa0)))
+	print('Ground truth for (gamma,kappa): ({0},{1})'.format(gamma0,kappa0))
 	print('Min of negLL for (gamma,kappa): ({0:0.3f},{1:0.3f})'.format(gamma[row[0]],kappa[col[0]]))
 	coords_hat = (row[0],col[0])
-	plot_save_3D(gamma,kappa,negLL,coords0,coords_hat,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples,verbose=False)
+	log_kappa = [np.log(k) for k in kappa]
+	plot_save_3D(gamma,log_kappa,negLL,coords0,coords_hat,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples,verbose=False)
 
 	fn='estimates/cdd_gkLL.npy'
 	save_to_numpy(fn,gamma,kappa,negLL)
