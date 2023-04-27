@@ -74,7 +74,8 @@ for metaUncVal = linspace(0.01,5,5)
                 paramVec = [guessRate, stimSens, stimCrit, uncMeta, confCrit];
         
                 % Fit simulated data
-                NLL   = giveNLL(paramVec, stimValue, nChoice, calcPrecision, asymFlag);
+                %get LL instead for now
+                NLL   = -1 * giveNLL(paramVec, stimValue, nChoice, calcPrecision, asymFlag);
                 negLLArray(i,j) = NLL;
                 
             end
@@ -87,12 +88,13 @@ for metaUncVal = linspace(0.01,5,5)
         disp(confCritArray(col));
         
         %create surface plot of negLLArray versus (metaUncArray,confCritArray) values
-        sPlot = surf(metaUncArray,confCritArray,negLLArray);
+        sPlot = surfc(metaUncArray,confCritArray,negLLArray);
         %export file with a descriptive name
-        outputFileName = strcat("(", num2str(metaUncVal), ",", num2str(confCritVal), ")_NLL_Tradeoff_Analysis.eps");
+        outputFileName = strcat("(", num2str(metaUncVal), ",", num2str(confCritVal), ")_LL_Tradeoff_Analysis.fig");
         title(strcat("(", num2str(metaUncVal), ",", num2str(confCritVal), ")", " Parameter Tradeoff Analysis"));
-        xlabel("Meta-Uncertainty"), ylabel("Confidence Criterion"), zlabel("NLL");
-        saveas(sPlot,outputFileName);
+        xlabel("Meta-Uncertainty"), ylabel("Confidence Criterion"), zlabel("LL");
+        fig = gcf;
+        saveas(fig,outputFileName);
     end
 end
 
