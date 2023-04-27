@@ -21,38 +21,29 @@ clc;
 stimValue = linspace(-3, 3, 11);   % The different stimulus conditions in units of stimulus magnitude (e.g., orientation in degrees)
 stimReps  = 200;                   % The number of repeats per stimulus
 
-% Set model parameters
-guessRate   = 0.000;                % The fraction of guesses
-stimSens    = .5;                   % Stimulus sensitvity parameter, higher values produce a steeper psychometric function, strictly positive
-stimCrit    = 0;                    % The sensory decision criterion in units of stimulus magnitude (e.g., orientation in degrees)
-uncMeta     = .5;                   % Meta-uncertainty: the second stage noise parameter, only affects confidence judgments, strictly positive
-confCrit    = [.75 1];              % The confidence criteria, unitless (can include more than 1)
-asymFlag    = 0;                    % If set to 1, it allows for asymmetrical confidence criteria and confCrit needs two times as many elements    
+%MAIN GOAL: loop through different initial values of uncMeta and confCrit and generate
+%NLL surface for each
+for metaUncVal = linspace(0.01,5,5)
+    for confCritVal = linspace(0,5,5)
+        % Set model parameters
+        guessRate   = 0.000;                % The fraction of guesses
+        stimSens    = .5;                   % Stimulus sensitvity parameter, higher values produce a steeper psychometric function, strictly positive
+        stimCrit    = 0;                    % The sensory decision criterion in units of stimulus magnitude (e.g., orientation in degrees)
+        uncMeta     = metaUncVal;                   % Meta-uncertainty: the second stage noise parameter, only affects confidence judgments, strictly positive
+        confCrit    = confCritVal;              % The confidence criteria, unitless (can include more than 1)
+        asymFlag    = 0;                    % If set to 1, it allows for asymmetrical confidence criteria and confCrit needs two times as many elements   
 
-%create metauncertainty and confidence criterion arrays
-metaUncArray = zeros(1,100);
-confCritArray = linspace(0,5,100);
-
-%generate (uncMeta,confCrit) pairs
-%generate 100 values for each variable
-countI = 1;
-countJ = 1;
-negLLArray = zeros(1,10000);
-for i=linspace(0.01,5,100)
-    uncMeta = log10(i);
-    metaUncArray(countI) = uncMeta;
-    for j=linspace(0,5,100)
-        confCrit = j;
+        %generate single nChoice
         modelParams = [guessRate, stimSens, stimCrit, uncMeta, confCrit];
         modelParamsLabel = [{'guessRate', 'stimSens', 'stimCrit', 'uncMeta'} repmat({'confCrit'},1,numel(confCrit))];
-        
+                
         % Set calulation precision
         calcPrecision = 100;                % Higher values produce slower, more precise estimates. Precision saturates after ~25
-        
-        % Get model predictions
+                
+         % Get model predictions
         [choiceLlh] = getLlhChoice(stimValue, modelParams, calcPrecision, asymFlag);
-        %disp(choiceLlh);
-        % Simulate choice data
+         %disp(choiceLlh);
+         % Simulate choice data
         randNumbers = rand(stimReps, numel(stimValue));
         criteria    = cumsum(choiceLlh);
         
@@ -66,35 +57,46 @@ for i=linspace(0.01,5,100)
             end
         end
         nChoice  = cell2mat(n');
-        %disp(nChoice);
-        % Fit simulated data
-        options  = optimset('Display', 'off', 'Maxiter', 10^5, 'MaxFuneval', 10^5);
-        obFun    = @(paramVec) giveNLL(paramVec, stimValue, nChoice, calcPrecision, asymFlag);
-        startVec = [.01 1 -0.1 0.5 sort(2*rand(1,numel(confCrit)))];
-        % Search bounds:
-        LB          = zeros(numel(startVec),1);
-        UB          = zeros(numel(startVec),1);
         
-        LB(1,1)     = 0;                        UB(1,1)        = 0.1;                   % Guess rate
-        LB(2,1)     = 0;                        UB(2,1)        = 10;                    % Stimulus sensitivity
-        LB(3,1)     = -3;                       UB(3,1)        = 3;                     % Stimulus criterion
-        LB(4,1)     = 0.01;                     UB(4,1)        = 5;                     % Meta uncertainty 
-        LB(5:end,1) = 0;                        UB(5:end,1)    = 5;                     % Confidence criteria
-        [paramEst,NLL]    = fmincon(obFun, startVec, [], [], [], [], LB, UB, [], options);
-        negLLArray(countJ) = NLL;
-        countJ = countJ + 1;
+        
+        
+        %create metauncertainty and confidence criterion arrays
+        metaUncArray = logspace(log10(0.1),log10(10),100);
+        confCritArray = linspace(0,5,100);
+        
+        %generate (uncMeta,confCrit) pairs
+        %generate 100 values for each variable
+        negLLArray = zeros(100,100);
+        for i=1:100
+            uncMeta = metaUncArray(i);
+            for j=1:100
+                confCrit = confCritArray(j);
+                paramVec = [guessRate, stimSens, stimCrit, uncMeta, confCrit];
+        
+                % Fit simulated data
+                NLL   = giveNLL(paramVec, stimValue, nChoice, calcPrecision, asymFlag);
+                negLLArray(i,j) = NLL;
+                
+            end
+           
+        end
+        
+        [m,i] = min(negLLArray,[],"all");
+        [row,col] = ind2sub([100,100],i);
+        disp(metaUncArray(row));
+        disp(confCritArray(col));
+        
+        %create surface plot of negLLArray versus (metaUncArray,confCritArray) values
+        sPlot = surf(metaUncArray,confCritArray,negLLArray);
+        %export file with a descriptive name
+        outputFileName = strcat("(", num2str(metaUncVal), ",", num2str(confCritVal), ")_NLL_Tradeoff_Analysis.eps");
+        title(strcat("(", num2str(metaUncVal), ",", num2str(confCritVal), ")", " Parameter Tradeoff Analysis"));
+        xlabel("Meta-Uncertainty"), ylabel("Confidence Criterion"), zlabel("NLL");
+        saveas(sPlot,outputFileName);
     end
-    countI = countI + 1;
 end
 
-%plot surface plot of negLLArray versus (metaUncArray,confCritArray) values
-%convert negLLArray to a matrix (for plotting purposes)
-Z = reshape(negLLArray,100,100);
-surf(metaUncArray,confCritArray,Z);
-title("NLL vs (Meta-Uncertainty, Confidence Criterion)");
-xlabel("log(Meta-Uncertainty)"), ylabel("Confidence Criterion"), zlabel("NLL");
-
-
+ 
 function [NLL] = giveNLL(paramVec, stimValue, nChoice, calcPrecision, asymFlag)
 choiceLlh = getLlhChoice(stimValue, paramVec,calcPrecision, asymFlag);
 NLL       = -sum(sum(nChoice.*log(choiceLlh)));
