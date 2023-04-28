@@ -21,7 +21,7 @@ sys.path.append(parent)
 from IDM_model.src import model_functions as mf
 
 
-def plot_save_3D(Xlin,Ylin,Z,c0,c_hat,xlabel='',ylabel='',zlabel='',nb_samples=50,verbose=False):
+def plot_save_3D(Xlin,Ylin,Z,gt,c0,c_hat,xlabel='',ylabel='',zlabel='',nb_samples=50,verbose=False):
 	print('coordinates of ground truth : {}'.format(c0))
 	print('coordinates of estimate : {}'.format(c_hat))
 	# Plot the surface.
@@ -60,8 +60,9 @@ def plot_save_3D(Xlin,Ylin,Z,c0,c_hat,xlabel='',ylabel='',zlabel='',nb_samples=5
 	#plot points.
 	ax.plot(Ami[:,0], Ami[:,1], Ami[:,2], marker="o", ls="", c=cm.coolwarm(0.))
 	ax.plot(Ama[:,0], Ama[:,1], Ama[:,2], marker="o", ls="", c=cm.coolwarm(1.))
-	plt.xlabel(xlabel)
-	plt.ylabel(ylabel)
+	plt.xlabel(r'${}$'.format(xlabel))
+	plt.ylabel(r'${}$'.format(ylabel))
+	plt.title(r'${0}$,${1}$ :: {2:0.3f},{3:0.3f}'.format(xlabel,ylabel,gt[0],np.log(gt[1])))
 	ax.set_zlabel(zlabel)
 
 	ax.view_init(azim=-45, elev=19)
@@ -160,7 +161,7 @@ def simulate_v1_v2(fn='',v1_0=0.8,v2_0=0.5,v_fixed=1.0,v1_bound=[0,8],v2_bound=[
 		for iv2,v2 in enumerate(var2):
 				# v2 = np.exp(v2)
 				negLL[iv1,iv2] = estimate_NLL_model(data,v1,v2)
-				print('index ({0},{1}), parms ({2:0.3f},{3:0.3f}), negLL {4:0.3f}'.format(iv1,iv2,v1,v2,negLL[iv1,iv2]))
+				# print('index ({0},{1}), parms ({2:0.3f},{3:0.3f}), negLL {4:0.3f}'.format(iv1,iv2,v1,v2,negLL[iv1,iv2]))
 	return var1,var2,negLL
 
 
@@ -190,11 +191,9 @@ def simulate_CDD(nb_samples=50):
 	# ground truth
 	gamma0=4
 	kappa0=0.1
+	gt = [gamma0,kappa0]
 
 	gamma,kappa,negLL = simulate_v1_v2(fn=CDD_fn,v1_0=gamma0,v2_0=kappa0,v_fixed=alpha0,v1_bound=gamma_bound,v2_bound=kappa_bound,nb_samples=nb_samples)
-	print(gamma)
-	print(kappa)
-	print(negLL)
 	(row,col) = np.where(negLL == np.min(negLL))
 	row0 = find_nearest(gamma,gamma0)
 	col0 = find_nearest(kappa,kappa0)
@@ -203,7 +202,7 @@ def simulate_CDD(nb_samples=50):
 	print('Min of negLL for (gamma,kappa): ({0:0.3f},{1:0.3f})'.format(gamma[row[0]],kappa[col[0]]))
 	coords_hat = (row[0],col[0])
 	log_kappa = [np.log(k) for k in kappa]
-	plot_save_3D(gamma,log_kappa,negLL,coords0,coords_hat,xlabel='gamma',ylabel='kappa',zlabel='negative log-likelihood',nb_samples=nb_samples,verbose=False)
+	plot_save_3D(gamma,log_kappa,negLL,gt,coords0,coords_hat,xlabel='\gamma',ylabel='\log(\kappa)',zlabel='negative log-likelihood',nb_samples=nb_samples,verbose=False)
 
 	fn='estimates/cdd_gkLL.npy'
 	save_to_numpy(fn,gamma,kappa,negLL)
