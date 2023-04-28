@@ -66,26 +66,10 @@ def plot_save_3D(Xlin,Ylin,Z,gt,c0,c_hat,xlabel='',ylabel='',zlabel='',nb_sample
 	ax.set_zlabel(zlabel)
 
 	ax.view_init(azim=-45, elev=19)
-	# plt.savefig(__file__+".png")
-	plt.show()
-
-	# fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-	# ax.plot_surface(Xmesh, Ymesh, Z, cmap=cm.hsv,linewidth=0, antialiased=False)	
-
-	# model_sim_dir = '/Users/pizarror/mturk/model_simulation/figs'
-	# pickle_fn = os.path.join(model_sim_dir,'negLL_{}_{}_{}_samples.fig.pickle'.format(xlabel,ylabel,int(nb_samples**2)))
-	# request_save_path(prompt='Please enter the path to the .fig.pickle file to save the plot')
-	# print('Saving 3D plot to : {}'.format(pickle_fn))
-	# pickle.dump(fig, open(pickle_fn, 'wb'))
-
-	if verbose:
-		print('\n\n===Showing the figure in python (or ipython) after saving it===\n\n')
-		print('>>> import pickle')
-		print(">>> figx = pickle.load(open({}, 'rb'))".format(pickle_fn))
-		print('>>> figx.show() for Showing the figure, edit it, etc.!')
-	
-
-
+	fn = 'figs/negLL_gamma_{}_kappa_{}.eps'.format(gt[0],np.log(gt[1]))
+	print('Saving to : {}'.format(fn))
+	plt.savefig(fn,format='eps')
+	plt.close()
 
 def estimate_NLL_model(data,gamma0,kappa0):
 	# estimate parameters based on self-generated data
@@ -93,35 +77,11 @@ def estimate_NLL_model(data,gamma0,kappa0):
 	negLL = mf.function_negLL(parms,data)
 	return negLL
 
-
 def range_variables(v1_bound,v2_bound,nb_samples=100):
 
 	v1 = np.linspace(v1_bound[0], v1_bound[1], num=nb_samples).tolist()
 	v2 = np.linspace(v2_bound[0], v2_bound[1], num=nb_samples).tolist()
 	return v1,v2
-
-
-def plot_ground_hat(v1_ground,v2_ground,v1_hat,v2_hat):
-
-	plt.figure(1000)
-	print(v1_hat)
-	for i in range(v2_ground.shape[1]):
-		plt.plot(v1_ground[:,i],v1_hat[:,i],'*-',label=r'$\alpha = {0:0.3f}$'.format(v2_ground[3,i]))
-		plt.xlabel(r'$\gamma_{truth}$',fontsize=12)
-		plt.ylabel(r'$\gamma_{estimate}$',fontsize=12)
-	plt.legend(loc='center left',bbox_to_anchor=(1, 0.5))
-	plt.tight_layout()
-
-	plt.figure(1001)
-	print(v2_hat)
-	for i in range(v1_ground.shape[0]):
-		plt.plot(np.log(v2_ground[i,:]),np.log(v2_hat[i,:]),'*-',label=r'$\gamma = {0:0.3f}$'.format(v1_ground[i,0]))
-		plt.xlabel(r'$\kappa_{truth}$',fontsize=12)
-		plt.ylabel(r'$\kappa_{estimate}$',fontsize=12)
-	plt.legend(loc='center left',bbox_to_anchor=(1, 0.5))
-	plt.tight_layout()
-	plt.show()
-	sys.exit()
 
 def simulate_data(fn,alpha0,gamma0=0.8,kappa0=0.5):
 	df = pd.read_csv(fn)
@@ -188,24 +148,34 @@ def simulate_CDD(nb_samples=50):
 	# range for ln(discount_rate) : [-6,-1]
 	kappa_bound = [0.00035,0.368]
 	# log_discount_rate_bound = [-8,1]
-	# ground truth
-	gamma0=4
-	kappa0=0.1
-	gt = [gamma0,kappa0]
 
-	gamma,kappa,negLL = simulate_v1_v2(fn=CDD_fn,v1_0=gamma0,v2_0=kappa0,v_fixed=alpha0,v1_bound=gamma_bound,v2_bound=kappa_bound,nb_samples=nb_samples)
-	(row,col) = np.where(negLL == np.min(negLL))
-	row0 = find_nearest(gamma,gamma0)
-	col0 = find_nearest(kappa,kappa0)
-	coords0 = (row0,col0)
-	print('Ground truth for (gamma,kappa): ({0},{1})'.format(gamma0,kappa0))
-	print('Min of negLL for (gamma,kappa): ({0:0.3f},{1:0.3f})'.format(gamma[row[0]],kappa[col[0]]))
-	coords_hat = (row[0],col[0])
-	log_kappa = [np.log(k) for k in kappa]
-	plot_save_3D(gamma,log_kappa,negLL,gt,coords0,coords_hat,xlabel='\gamma',ylabel='\log(\kappa)',zlabel='negative log-likelihood',nb_samples=nb_samples,verbose=False)
+	# gamma_bound diminished to not near the edge
+	gamma_eps = 0.05*(max(gamma_bound) - min(gamma_bound))
+	gamma_bound_dim = [g+(1-2*i)*gamma_eps for i,g in enumerate(gamma_bound)]
+	kappa_eps = 0.05*(max(kappa_bound) - min(kappa_bound))
+	kappa_bound_dim = [k+(1-2*i)*kappa_eps for i,k in enumerate(kappa_bound)]
 
-	fn='estimates/cdd_gkLL.npy'
-	save_to_numpy(fn,gamma,kappa,negLL)
+	gamma_range,kappa_range = range_variables(gamma_bound_dim,kappa_bound_dim,nb_samples=5)
+
+	for gamma0 in gamma_range:
+		for kappa0 in kappa_range:
+			# ground truth
+			gt = [gamma0,kappa0]
+			print(gt)
+
+			gamma,kappa,negLL = simulate_v1_v2(fn=CDD_fn,v1_0=gamma0,v2_0=kappa0,v_fixed=alpha0,v1_bound=gamma_bound,v2_bound=kappa_bound,nb_samples=nb_samples)
+			(row,col) = np.where(negLL == np.min(negLL))
+			row0 = find_nearest(gamma,gamma0)
+			col0 = find_nearest(kappa,kappa0)
+			coords0 = (row0,col0)
+			print('Ground truth for (gamma,kappa): ({0},{1})'.format(gamma0,kappa0))
+			print('Min of negLL for (gamma,kappa): ({0:0.3f},{1:0.3f})'.format(gamma[row[0]],kappa[col[0]]))
+			coords_hat = (row[0],col[0])
+			log_kappa = [np.log(k) for k in kappa]
+			plot_save_3D(gamma,log_kappa,negLL,gt,coords0,coords_hat,xlabel='\gamma',ylabel='\log(\kappa)',zlabel='negative log-likelihood',nb_samples=nb_samples,verbose=False)
+
+			# fn='estimates/cdd_gkLL.npy'
+			# save_to_numpy(fn,gamma,kappa,negLL)
 
 	
 def main():
