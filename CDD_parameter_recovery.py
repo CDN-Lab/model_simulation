@@ -35,7 +35,8 @@ def plot_save_3D(Xlin,Ylin,Z,gt,c0,c_hat,xlabel='',ylabel='',zlabel='',nb_sample
 	# ax = fig.gca(projection='3d')
 	fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 	ax.plot_surface(X, Y, Z, rstride=8, cstride=8, alpha=0.0)
-	ax.scatter(X[c0[0],c0[1]], Y[c0[0],c0[1]], Z[c0[0],c0[1]], c='green', marker='^', s=100)
+	# ax.scatter(X[c0[0],c0[1]], Y[c0[0],c0[1]], Z[c0[0],c0[1]], c='green', marker='^', s=100)
+	ax.scatter(gt[0], np.log(gt[1]), -100, c='green', marker='^', s=100)
 	# ax.scatter(X[c_hat[0],c_hat[1]], Y[c_hat[0],c_hat[1]], Z[c_hat[0],c_hat[1]], c='black', marker='*', s=1000)
 	cset = ax.contour(X, Y, Z, zdir='z', offset=-100, cmap=cm.coolwarm)
 	cset = ax.contour(X, Y, Z, zdir='x', offset=-1, cmap=cm.coolwarm)
@@ -154,9 +155,10 @@ def simulate_CDD(nb_samples=50):
 	gamma_bound_dim = [g+(1-2*i)*gamma_eps for i,g in enumerate(gamma_bound)]
 	logkappa_eps = 0.05*(max(logkappa_bound) - min(logkappa_bound))
 	logkappa_bound_dim = [k+(1-2*i)*logkappa_eps for i,k in enumerate(logkappa_bound)]
-	kappa_bound_dim = [np.exp(k) for k in logkappa_bound_dim]
+	
+	gamma_range,logkappa_range = range_variables(gamma_bound_dim,logkappa_bound_dim,nb_samples=5)
 
-	gamma_range,kappa_range = range_variables(gamma_bound_dim,kappa_bound_dim,nb_samples=5)
+	kappa_range = [np.exp(k) for k in logkappa_range]
 
 	for gamma0 in gamma_range:
 		for kappa0 in kappa_range:
