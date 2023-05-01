@@ -21,7 +21,7 @@ sys.path.append(parent)
 from IDM_model.src import model_functions as mf
 
 
-def plot_save_3D(Xlin,Ylin,Z,gt,c0,c_hat,xlabel='',ylabel='',zlabel='',nb_samples=50,verbose=False):
+def plot_save_3D(Xlin,Ylin,Z,gt,c0,c_hat,fig_info = (0,0),xlabel='',ylabel='',zlabel='',nb_samples=50,verbose=False):
 	print('coordinates of ground truth : {}'.format(c0))
 	print('coordinates of estimate : {}'.format(c_hat))
 	# Plot the surface.
@@ -31,10 +31,11 @@ def plot_save_3D(Xlin,Ylin,Z,gt,c0,c_hat,xlabel='',ylabel='',zlabel='',nb_sample
 	print('estimate')
 	print(Xlin[c_hat[0]], Ylin[c_hat[1]], Z[c_hat[0],c_hat[1]])
 
-	# fig = plt.figure()
+	fig = plt.figure(1)
 	# ax = fig.gca(projection='3d')
-	fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-	ax.plot_surface(X, Y, Z, rstride=8, cstride=8, alpha=0.0)
+	# fig, ax = plt.subplots(fig_info[0],fig_info[0],fig_info[1], subplot_kw={"projection": "3d"})
+	ax = fig.add_subplot(fig_info[0],fig_info[0],fig_info[1], projection='3d')
+	ax.plot_surface(X, Y, Z, rstride=8, cstride=8, alpha=0.1)
 	# ax.scatter(X[c0[0],c0[1]], Y[c0[0],c0[1]], Z[c0[0],c0[1]], c='green', marker='^', s=100)
 	ax.scatter(gt[0], np.log(gt[1]), -100, c='green', marker='^', s=100)
 	# ax.scatter(X[c_hat[0],c_hat[1]], Y[c_hat[0],c_hat[1]], Z[c_hat[0],c_hat[1]], c='black', marker='*', s=1000)
@@ -61,16 +62,24 @@ def plot_save_3D(Xlin,Ylin,Z,gt,c0,c_hat,xlabel='',ylabel='',zlabel='',nb_sample
 	#plot points.
 	ax.plot(Ami[:,0], Ami[:,1], Ami[:,2], marker="o", ls="", c=cm.coolwarm(0.))
 	ax.plot(Ama[:,0], Ama[:,1], Ama[:,2], marker="o", ls="", c=cm.coolwarm(1.))
-	plt.xlabel(r'${}$'.format(xlabel))
-	plt.ylabel(r'${}$'.format(ylabel))
-	plt.title(r'${0}$,${1}$ :: {2:0.3f},{3:0.3f}'.format(xlabel,ylabel,gt[0],np.log(gt[1])))
-	ax.set_zlabel(zlabel)
-
+	if (fig_info[1]-1)//fig_info[0] == (fig_info[0]-1):
+		plt.xlabel(r'${}$'.format(xlabel))
+		plt.ylabel(r'${}$'.format(ylabel))
+	if (fig_info[1] <= fig_info[0]):
+		plt.title(r'${0}$ : {1:0.3f}'.format(ylabel,np.log(gt[1])))
+	# plt.title(r'${0}$,${1}$ :: {2:0.3f},{3:0.3f}'.format(xlabel,ylabel,gt[0],np.log(gt[1])))
+	if not np.mod(fig_info[1],fig_info[0]):
+		ax.set_zlabel(r'{0}, ${1}$ : {2:0.3f}'.format(zlabel,xlabel,gt[0]))
 	ax.view_init(azim=-45, elev=19)
+
+	return plt
+
+""" 
 	fn = 'figs/negLL_gamma_kappa/negLL_gamma_{0:0.3f}_logkappa_{1:0.3f}.eps'.format(gt[0],np.log(gt[1]))
 	print('Saving to : {}'.format(fn))
 	plt.savefig(fn,format='eps')
 	plt.close()
+ """
 
 def estimate_NLL_model(data,gamma0,kappa0):
 	# estimate parameters based on self-generated data
@@ -156,10 +165,12 @@ def simulate_CDD(nb_samples=50):
 	logkappa_eps = 0.05*(max(logkappa_bound) - min(logkappa_bound))
 	logkappa_bound_dim = [k+(1-2*i)*logkappa_eps for i,k in enumerate(logkappa_bound)]
 	
-	gamma_range,logkappa_range = range_variables(gamma_bound_dim,logkappa_bound_dim,nb_samples=5)
+	nb_var_samples = 5
+	gamma_range,logkappa_range = range_variables(gamma_bound_dim,logkappa_bound_dim,nb_samples=nb_var_samples)
 
 	kappa_range = [np.exp(k) for k in logkappa_range]
-
+	# figure index for subplot
+	fig_idx = 1
 	for gamma0 in gamma_range:
 		for kappa0 in kappa_range:
 			# ground truth
@@ -175,10 +186,14 @@ def simulate_CDD(nb_samples=50):
 			print('Min of negLL for (gamma,kappa): ({0:0.3f},{1:0.3f})'.format(gamma[row[0]],kappa[col[0]]))
 			coords_hat = (row[0],col[0])
 			log_kappa = [np.log(k) for k in kappa]
-			plot_save_3D(gamma,log_kappa,negLL,gt,coords0,coords_hat,xlabel='\gamma',ylabel='\log(\kappa)',zlabel='negative log-likelihood',nb_samples=nb_samples,verbose=False)
-
+			plt = plot_save_3D(gamma,log_kappa,negLL,gt,coords0,coords_hat,fig_info=(nb_var_samples,fig_idx), xlabel='\gamma',ylabel='\log(\kappa)',zlabel='NLL',nb_samples=nb_samples,verbose=False)
+			fig_idx += 1
 			# fn='estimates/cdd_gkLL.npy'
 			# save_to_numpy(fn,gamma,kappa,negLL)
+	fn = 'figs/negLL_gamma_kappa.eps'
+	print('Saving to : {}'.format(fn))
+	plt.savefig(fn,format='eps')
+	plt.show()
 
 	
 def main():
