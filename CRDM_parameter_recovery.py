@@ -72,7 +72,7 @@ def plot_save_3D(Xlin,Ylin,Z,gt,c0,c_hat,fig_info = (0,0),xlabel='',ylabel='',zl
 		ax.set_zlabel(r'{0}, ${1}$ : {2:0.3f}'.format(zlabel,xlabel,gt[0]))
 	ax.view_init(azim=-45, elev=19)
 
-	return plt
+	return fig,plt
 
 """ 
 	fn = 'figs/negLL_gamma_kappa/negLL_gamma_{0:0.3f}_logkappa_{1:0.3f}.eps'.format(gt[0],np.log(gt[1]))
@@ -182,10 +182,11 @@ def simulate_CRDM(nb_samples=50):
 			print('Ground truth for (gamma,alpha): ({0},{1})'.format(gamma0,alpha0))
 			print('Min of negLL for (gamma,alpha): ({0:0.3f},{1:0.3f})'.format(gamma[row[0]],alpha[col[0]]))
 			coords_hat = (row[0],col[0])
-			plt = plot_save_3D(gamma,alpha,negLL,gt,coords0,coords_hat,fig_info=(nb_var_samples,fig_idx), xlabel='\gamma',ylabel=r'\alpha',zlabel='NLL',nb_samples=nb_samples,verbose=False)
+			fig,plt = plot_save_3D(gamma,alpha,negLL,gt,coords0,coords_hat,fig_info=(nb_var_samples,fig_idx), xlabel='\gamma',ylabel=r'\alpha',zlabel='NLL',nb_samples=nb_samples,verbose=False)
 			fig_idx += 1
 			# fn='estimates/crdm_gkLL.npy'
 			# save_to_numpy(fn,gamma,kappa,negLL)
+	fig.tight_layout()
 	fn = 'figs/negLL_gamma_alpha.eps'
 	print('Saving to : {}'.format(fn))
 	plt.savefig(fn,format='eps')
