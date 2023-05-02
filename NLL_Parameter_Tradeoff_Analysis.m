@@ -18,7 +18,7 @@ clearvars;
 clc;
 
 % Set experiment parameters
-stimValue = linspace(-3, 3, 11);   % The different stimulus conditions in units of stimulus magnitude (e.g., orientation in degrees)
+stimValue = linspace(-4.5, 4.5, 19);   % The different stimulus conditions in units of stimulus magnitude (e.g., orientation in degrees)
 stimReps  = 200;                   % The number of repeats per stimulus
 
 %MAIN GOAL: loop through different initial values of uncMeta and confCrit and generate
@@ -58,41 +58,57 @@ for metaUncVal = linspace(0.01,5,5)
         end
         nChoice  = cell2mat(n');
         
-        
+        % number of samples meta uncertainty
+        M = 10;
+        % number of samples confidence criteria
+        N = 100;
         
         %create metauncertainty and confidence criterion arrays
-        metaUncArray = logspace(log10(0.1),log10(10),100);
-        confCritArray = linspace(0,5,100);
+        metaUncArray = logspace(log10(0.1),log10(10),M);
+        confCritArray = linspace(0,5,N);
         
         %generate (uncMeta,confCrit) pairs
         %generate 100 values for each variable
-        negLLArray = zeros(100,100);
-        for i=1:100
+        LLArray = zeros(M,N);
+        for i=1:M
             uncMeta = metaUncArray(i);
-            for j=1:100
+            for j=1:N
                 confCrit = confCritArray(j);
                 paramVec = [guessRate, stimSens, stimCrit, uncMeta, confCrit];
         
                 % Fit simulated data
                 %get LL instead for now
-                NLL   = -1 * giveNLL(paramVec, stimValue, nChoice, calcPrecision, asymFlag);
-                negLLArray(i,j) = NLL;
+                LL   = -1 * giveNLL(paramVec, stimValue, nChoice, calcPrecision, asymFlag);
+                LLArray(i,j) = LL;
                 
             end
            
         end
         
-        [m,i] = min(negLLArray,[],"all");
-        [row,col] = ind2sub([100,100],i);
-        disp(metaUncArray(row));
-        disp(confCritArray(col));
+        [maxLL,i] = max(LLArray,[],"all");
+        [row,col] = ind2sub([M,N],i);
+        maxMetaUncVal = metaUncArray(row);
+        maxConfCritVal = confCritArray(col);
+        fprintf('max meta %1.3f, max confidence %1.3f, max log likelihood %1.3f\n',maxMetaUncVal,maxConfCritVal,maxLL);
+        %disp(maxMetaUncVal);
+        %disp(maxConfCritVal);
         
         %create surface plot of negLLArray versus (metaUncArray,confCritArray) values
-        sPlot = surfc(metaUncArray,confCritArray,negLLArray);
+        [metaMesh,confMesh] = meshgrid(metaUncArray,confCritArray);
+        % sPlot = surfc(metaUncArray,confCritArray,LLArray);
+        LLPlot = LLArray';
+        sPlot = surfc(metaMesh,confMesh,LLPlot);
         %export file with a descriptive name
         outputFileName = strcat("(", num2str(metaUncVal), ",", num2str(confCritVal), ")_LL_Tradeoff_Analysis.fig");
         title(strcat("(", num2str(metaUncVal), ",", num2str(confCritVal), ")", " Parameter Tradeoff Analysis"));
         xlabel("Meta-Uncertainty"), ylabel("Confidence Criterion"), zlabel("LL");
+        hold on;
+        
+        %plot maximum LL value on surface plot
+        scatter3(maxMetaUncVal,maxConfCritVal,maxLL,'r','filled');
+        hold off;
+
+        %save figure
         fig = gcf;
         saveas(fig,outputFileName);
     end
