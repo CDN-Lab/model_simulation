@@ -1,7 +1,6 @@
 import os,sys
 import numpy as np
 import pandas as pd
-import pickle
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import shared_core.common_functions as cf
@@ -21,27 +20,17 @@ sys.path.append(parent)
 from IDM_model.src import model_functions as mf
 
 
-def plot_save_3D(Xlin,Ylin,Z,gt,c0,c_hat,fig_info = (0,0),xlabel='',ylabel='',zlabel='',nb_samples=50,verbose=False):
-	print('coordinates of ground truth : {}'.format(c0))
-	print('coordinates of estimate : {}'.format(c_hat))
+
+def plot_save_3D(fig_idx=1,Xlin=[],Ylin=[],Z=[],xlabel='',ylabel='',zlabel=''):
 	# Plot the surface.
 	X, Y = np.meshgrid(Xlin, Ylin,indexing='ij')
-	print('ground truth')
-	print(Xlin[c0[0]], Ylin[c0[1]], Z[c0[0],c0[1]])
-	print('estimate')
-	print(Xlin[c_hat[0]], Ylin[c_hat[1]], Z[c_hat[0],c_hat[1]])
-
-	fig = plt.figure(1)
-	# ax = fig.gca(projection='3d')
-	# fig, ax = plt.subplots(fig_info[0],fig_info[0],fig_info[1], subplot_kw={"projection": "3d"})
-	ax = fig.add_subplot(fig_info[0],fig_info[0],fig_info[1], projection='3d')
+	fig = plt.figure(fig_idx)
+	ax = fig.subplots(subplot_kw={"projection": "3d"})
 	ax.plot_surface(X, Y, Z, rstride=8, cstride=8, alpha=0.5)
-	# ax.scatter(X[c0[0],c0[1]], Y[c0[0],c0[1]], Z[c0[0],c0[1]], c='green', marker='^', s=100)
-	ax.scatter(gt[0], gt[1], -100, c='green', marker='^', s=100)
-	# ax.scatter(X[c_hat[0],c_hat[1]], Y[c_hat[0],c_hat[1]], Z[c_hat[0],c_hat[1]], c='black', marker='*', s=1000)
-	cset = ax.contour(X, Y, Z, zdir='z', offset=np.min(np.min(Z))-100, cmap=cm.coolwarm)
-	cset = ax.contour(X, Y, Z, zdir='x', offset=np.min(Xlin)-1, cmap=cm.coolwarm)
-	cset = ax.contour(X, Y, Z, zdir='y', offset=np.max(Ylin), cmap=cm.coolwarm)
+	offset = [np.min(Xlin)-1,np.max(Ylin),np.min(np.min(Z))]
+	cset = ax.contour(X, Y, Z, zdir='z', offset=offset[2], cmap=cm.coolwarm)
+	cset = ax.contour(X, Y, Z, zdir='x', offset=offset[0], cmap=cm.coolwarm)
+	cset = ax.contour(X, Y, Z, zdir='y', offset=offset[1], cmap=cm.coolwarm)
 
 	# calc index of min/max Z value
 	xmin, ymin = np.unravel_index(np.argmin(Z), Z.shape)
@@ -55,31 +44,20 @@ def plot_save_3D(Xlin,Ylin,Z,gt,c0,c_hat,fig_info = (0,0),xlabel='',ylabel='',zl
 	# first row for points in xplane, last row for points in 3D space
 	Ami = np.array([mi]*4)
 	Ama = np.array([ma]*4)
-	for i, v in enumerate([-1,1,-100]):
+	for i, v in enumerate(offset):
 		Ami[i,i] = v 
 		Ama[i,i] = v 
 
 	#plot points.
 	ax.plot(Ami[:,0], Ami[:,1], Ami[:,2], marker="o", ls="", c=cm.coolwarm(0.))
 	ax.plot(Ama[:,0], Ama[:,1], Ama[:,2], marker="o", ls="", c=cm.coolwarm(1.))
-	if (fig_info[1]-1)//fig_info[0] == (fig_info[0]-1):
-		plt.xlabel(r'${}$'.format(xlabel))
-		plt.ylabel(r'${}$'.format(ylabel))
-	if (fig_info[1] <= fig_info[0]):
-		plt.title(r'${0}$ : {1:0.3f}'.format(ylabel,gt[1]))
-	# plt.title(r'${0}$,${1}$ :: {2:0.3f},{3:0.3f}'.format(xlabel,ylabel,gt[0],np.log(gt[1])))
-	if not np.mod(fig_info[1],fig_info[0]):
-		ax.set_zlabel(r'{0}, ${1}$ : {2:0.3f}'.format(zlabel,xlabel,gt[0]))
+	plt.xlabel(r'${}$'.format(xlabel))
+	plt.ylabel(r'${}$'.format(ylabel))
+	ax.set_zlabel(r'${}$'.format(zlabel))
 	ax.view_init(azim=-45, elev=19)
 
-	return fig,plt
-
-""" 
-	fn = 'figs/negLL_gamma_kappa/negLL_gamma_{0:0.3f}_logkappa_{1:0.3f}.eps'.format(gt[0],np.log(gt[1]))
-	print('Saving to : {}'.format(fn))
-	plt.savefig(fn,format='eps')
-	plt.close()
- """
+	fig.tight_layout()
+	return plt
 
 def estimate_NLL_model(data,gamma0,beta0,alpha0):
 	# estimate parameters based on self-generated data
@@ -135,19 +113,37 @@ def simulate_v1_v2(fn='',v1_0=0.8,v2_0=0.5,v_fixed=1.0,v1_bound=[0,8],v2_bound=[
 	return var1,var2,negLL
 
 
-def save_to_numpy(fn,gamma,kappa,negLL):
+def save_to_numpy(fn,MSE1,MSE2):
 	with open(fn, 'wb') as f:
-		np.save(f, gamma)
-		np.save(f, kappa)
-		np.save(f, negLL)
+		np.save(f, MSE1)
+		np.save(f, MSE2)
 
 def find_nearest(array, value):
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
     return idx
 
+def gen_estimates(nb_estimates=10,fn='',var=[0,0],vfix=0.8,v1_bound=[0,8],v2_bound=[0.125,4.341],nb_samples=10):
+	hat = [[0,0]]*nb_estimates
+	print('\nGround truth for (gamma,alpha): ({0},{1})'.format(var[0],var[1]))
+	for i in range(nb_estimates):
+		gamma,alpha,negLL = simulate_v1_v2(fn=fn,v1_0=var[0],v2_0=var[1],v_fixed=vfix,v1_bound=v1_bound,v2_bound=v2_bound,nb_samples=nb_samples)
+		(row,col) = np.where(negLL == np.min(negLL))
+		hat[i] = [gamma[row[0]],alpha[col[0]]]
+		print('Min of negLL for (gamma,alpha): ({0:0.3f},{1:0.3f})'.format(hat[i][0],hat[i][1]))
+	return hat
+
+def compute_mse(gt,hat):
+	mse1 = 0
+	mse2 = 0
+	for i in range(len(hat)):
+		mse1 += (gt[0]-hat[i][0])**2 
+		mse2 += (gt[1]-hat[i][1])**2
+	# nmse = mse/((gt[0])**2+(gt[1])**2)
+	return mse1/len(hat),mse2/len(hat)
+
 def simulate_CRDM(nb_samples=50):
-	CRDM_fn = '/Users/pizarror/mturk/idm_data/batch_output/bonus2/idm_2022-12-08_14h39.52.884/crdm/idm_2022-12-08_14h39.52.884_crdm.csv'
+	fn = '/Users/pizarror/mturk/idm_data/batch_output/bonus2/idm_2022-12-08_14h39.52.884/crdm/idm_2022-12-08_14h39.52.884_crdm.csv'
 	# CRDM_fn = cf.request_input_path(prompt='Please enter the path to an arbitray {} file'.format(task))
 	
 	# Second simulation, fix beta to 0.8 and vary gamma and alpha
@@ -163,38 +159,31 @@ def simulate_CRDM(nb_samples=50):
 	alpha_eps = 0.05*(max(alpha_bound) - min(alpha_bound))
 	alpha_bound_dim = [a+(1-2*i)*alpha_eps for i,a in enumerate(alpha_bound)]
 	
-	nb_var_samples = 3
+	nb_var_samples = 5
 	gamma_range,alpha_range = range_variables(gamma_bound_dim,alpha_bound_dim,nb_samples=nb_var_samples)
 
 	# figure index for subplot
 	fig_idx = 1
-	for gamma0 in gamma_range:
-		for alpha0 in alpha_range:
+	xsize,ysize = len(gamma_range),len(alpha_range)
+	MSE_gamma = np.zeros((xsize,ysize))
+	NMSE_gamma = np.zeros((xsize,ysize))
+	MSE_alpha = np.zeros((xsize,ysize))
+	NMSE_alpha = np.zeros((xsize,ysize))
+
+	for ig,gamma0 in enumerate(gamma_range):
+		for ia,alpha0 in enumerate(alpha_range):
 			# ground truth
 			gt = [gamma0,alpha0]
-			print(gt)
+			hat = gen_estimates(nb_estimates=5,fn=fn,var=gt,vfix=beta0,v1_bound=gamma_bound,v2_bound=alpha_bound,nb_samples=nb_samples)
+			MSE_gamma[ig,ia],MSE_alpha[ig,ia] = compute_mse(gt,hat)
 
-			gamma,alpha,negLL = simulate_v1_v2(fn=CRDM_fn,v1_0=gamma0,v2_0=alpha0,v_fixed=beta0,v1_bound=gamma_bound,v2_bound=alpha_bound,nb_samples=nb_samples)
-			(row,col) = np.where(negLL == np.min(negLL))
-			row0 = find_nearest(gamma,gamma0)
-			col0 = find_nearest(alpha,alpha0)
-			coords0 = (row0,col0)
-			print('Ground truth for (gamma,alpha): ({0},{1})'.format(gamma0,alpha0))
-			print('Min of negLL for (gamma,alpha): ({0:0.3f},{1:0.3f})'.format(gamma[row[0]],alpha[col[0]]))
-			coords_hat = (row[0],col[0])
-			fig,plt = plot_save_3D(gamma,alpha,negLL,gt,coords0,coords_hat,fig_info=(nb_var_samples,fig_idx), xlabel='\gamma',ylabel=r'\alpha',zlabel='NLL',nb_samples=nb_samples,verbose=False)
-			fig_idx += 1
-			# fn='estimates/crdm_gkLL.npy'
-			# save_to_numpy(fn,gamma,kappa,negLL)
-	fig.tight_layout()
-	fn = 'figs/negLL_gamma_alpha.eps'
-	print('Saving to : {}'.format(fn))
-	plt.savefig(fn,format='eps')
+	fn='estimates/crdm_MSE.npy'
+	save_to_numpy(fn,MSE_gamma,MSE_alpha)
+	plt = plot_save_3D(fig_idx=1,Xlin=gamma_range,Ylin=alpha_range,Z=MSE_gamma,xlabel=r'\gamma',ylabel=r'\alpha',zlabel=r'MSE_{\gamma}')
+	plt = plot_save_3D(fig_idx=2,Xlin=gamma_range,Ylin=alpha_range,Z=MSE_alpha,xlabel=r'\gamma',ylabel=r'\alpha',zlabel=r'MSE_{\alpha}')
 	plt.show()
 
-	
 def main():
-	# For some reason I cannot run these together, I have to run for one task, save, and rerun script
 	nb_samples=50
 	simulate_CRDM(nb_samples=nb_samples)
 
