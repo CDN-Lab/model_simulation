@@ -22,7 +22,7 @@ stimValue = linspace(-4.5, 4.5, 19);   % The different stimulus conditions in un
 stimReps  = 200;                   % The number of repeats per stimulus
 
 %MAIN GOAL: loop through different initial values of uncMeta and confCrit and generate
-%NLL surface for each
+%LL surface for each
 for metaUncVal = linspace(0.01,5,5)
     for confCritVal = linspace(0,5,5)
         % Set model parameters
@@ -59,7 +59,7 @@ for metaUncVal = linspace(0.01,5,5)
         nChoice  = cell2mat(n');
         
         % number of samples meta uncertainty
-        M = 10;
+        M = 100;
         % number of samples confidence criteria
         N = 100;
         
