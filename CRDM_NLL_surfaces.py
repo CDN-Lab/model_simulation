@@ -55,7 +55,7 @@ def plot_save_3D(Xlin,Ylin,Z,gt,c0,c_hat,fig_info = (0,0),xlabel='',ylabel='',zl
 	# first row for points in xplane, last row for points in 3D space
 	Ami = np.array([mi]*4)
 	Ama = np.array([ma]*4)
-	for i, v in enumerate([-1,1,-100]):
+	for i, v in enumerate([-1,0,-100]):
 		Ami[i,i] = v 
 		Ama[i,i] = v 
 
@@ -164,7 +164,10 @@ def simulate_CRDM(nb_samples=50):
 	alpha_bound_dim = [a+(1-2*i)*alpha_eps for i,a in enumerate(alpha_bound)]
 	
 	nb_var_samples = 5
-	gamma_range,alpha_range = range_variables(gamma_bound_dim,alpha_bound_dim,nb_samples=nb_var_samples)
+	# gamma_range,alpha_range = range_variables(gamma_bound_dim,alpha_bound_dim,nb_samples=nb_var_samples)
+
+	gamma_range = [0.4, 2.0, 2.8, 4.4, 7.6]
+	alpha_range = [0.336,0.757, 3.28, 3.71,4.13] #1.6, 2.86,
 
 	# figure index for subplot
 	fig_idx = 1
