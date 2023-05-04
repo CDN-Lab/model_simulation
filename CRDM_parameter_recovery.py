@@ -27,7 +27,8 @@ def plot_save_3D(fig_idx=1,Xlin=[],Ylin=[],Z=[],xlabel='',ylabel='',zlabel=''):
 	fig = plt.figure(fig_idx)
 	ax = fig.subplots(subplot_kw={"projection": "3d"})
 	ax.plot_surface(X, Y, Z, rstride=8, cstride=8, alpha=0.5)
-	offset = [np.min(Xlin)-1,np.max(Ylin),np.min(np.min(Z))]
+	# offset = [np.min(Xlin)-1,np.max(Ylin),np.min(np.min(Z))]
+	offset = [X.min()-0.1*X.ptp(), Y.max()+0.1*Y.ptp(), Z.min()-0.1*Z.ptp()]
 	cset = ax.contour(X, Y, Z, zdir='z', offset=offset[2], cmap=cm.coolwarm)
 	cset = ax.contour(X, Y, Z, zdir='x', offset=offset[0], cmap=cm.coolwarm)
 	cset = ax.contour(X, Y, Z, zdir='y', offset=offset[1], cmap=cm.coolwarm)
@@ -113,10 +114,12 @@ def simulate_v1_v2(fn='',v1_0=0.8,v2_0=0.5,v_fixed=1.0,v1_bound=[0,8],v2_bound=[
 	return var1,var2,negLL
 
 
-def save_to_numpy(fn,MSE1,MSE2):
+def save_to_numpy(fn,MSE1,MSE2,NMSE1,NMSE2):
 	with open(fn, 'wb') as f:
 		np.save(f, MSE1)
 		np.save(f, MSE2)
+		np.save(f, NMSE1)
+		np.save(f, NMSE2)
 
 def find_nearest(array, value):
     array = np.asarray(array)
@@ -139,8 +142,11 @@ def compute_mse(gt,hat):
 	for i in range(len(hat)):
 		mse1 += (gt[0]-hat[i][0])**2 
 		mse2 += (gt[1]-hat[i][1])**2
-	# nmse = mse/((gt[0])**2+(gt[1])**2)
-	return mse1/len(hat),mse2/len(hat)
+	mse1 = mse1/len(hat)
+	mse2 = mse2/len(hat)
+	nmse1 = mse1/(gt[0])**2
+	nmse2 = mse2/(gt[1])**2
+	return mse1,mse2,nmse1,nmse2
 
 def simulate_CRDM(nb_samples=50):
 	fn = '/Users/pizarror/mturk/idm_data/batch_output/bonus2/idm_2022-12-08_14h39.52.884/crdm/idm_2022-12-08_14h39.52.884_crdm.csv'
@@ -159,7 +165,7 @@ def simulate_CRDM(nb_samples=50):
 	alpha_eps = 0.05*(max(alpha_bound) - min(alpha_bound))
 	alpha_bound_dim = [a+(1-2*i)*alpha_eps for i,a in enumerate(alpha_bound)]
 	
-	nb_var_samples = 5
+	nb_var_samples = 10
 	gamma_range,alpha_range = range_variables(gamma_bound_dim,alpha_bound_dim,nb_samples=nb_var_samples)
 
 	# figure index for subplot
@@ -174,13 +180,15 @@ def simulate_CRDM(nb_samples=50):
 		for ia,alpha0 in enumerate(alpha_range):
 			# ground truth
 			gt = [gamma0,alpha0]
-			hat = gen_estimates(nb_estimates=5,fn=fn,var=gt,vfix=beta0,v1_bound=gamma_bound,v2_bound=alpha_bound,nb_samples=nb_samples)
-			MSE_gamma[ig,ia],MSE_alpha[ig,ia] = compute_mse(gt,hat)
+			hat = gen_estimates(nb_estimates=10,fn=fn,var=gt,vfix=beta0,v1_bound=gamma_bound,v2_bound=alpha_bound,nb_samples=nb_samples)
+			MSE_gamma[ig,ia],MSE_alpha[ig,ia],NMSE_gamma[ig,ia],NMSE_alpha[ig,ia] = compute_mse(gt,hat)
 
 	fn='estimates/crdm_MSE.npy'
-	save_to_numpy(fn,MSE_gamma,MSE_alpha)
-	plt = plot_save_3D(fig_idx=1,Xlin=gamma_range,Ylin=alpha_range,Z=MSE_gamma,xlabel=r'\gamma',ylabel=r'\alpha',zlabel=r'MSE_{\gamma}')
-	plt = plot_save_3D(fig_idx=2,Xlin=gamma_range,Ylin=alpha_range,Z=MSE_alpha,xlabel=r'\gamma',ylabel=r'\alpha',zlabel=r'MSE_{\alpha}')
+	save_to_numpy(fn,MSE_gamma,MSE_alpha,NMSE_gamma,NMSE_alpha)
+	plt = plot_save_3D(fig_idx=101,Xlin=gamma_range,Ylin=alpha_range,Z=MSE_gamma,xlabel=r'\gamma',ylabel=r'\alpha',zlabel=r'MSE_{\gamma}')
+	plt = plot_save_3D(fig_idx=102,Xlin=gamma_range,Ylin=alpha_range,Z=MSE_alpha,xlabel=r'\gamma',ylabel=r'\alpha',zlabel=r'MSE_{\alpha}')
+	plt = plot_save_3D(fig_idx=103,Xlin=gamma_range,Ylin=alpha_range,Z=NMSE_gamma,xlabel=r'\gamma',ylabel=r'\alpha',zlabel=r'NMSE_{\gamma}')
+	plt = plot_save_3D(fig_idx=104,Xlin=gamma_range,Ylin=alpha_range,Z=NMSE_alpha,xlabel=r'\gamma',ylabel=r'\alpha',zlabel=r'NMSE_{\alpha}')
 	plt.show()
 
 def main():
