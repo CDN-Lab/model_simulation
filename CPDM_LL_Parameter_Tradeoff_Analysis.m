@@ -19,15 +19,18 @@ clc;
 
 % Set experiment parameters
 stimValue = linspace(-4.5, 4.5, 19);   % The different stimulus conditions in units of stimulus magnitude (e.g., orientation in degrees)
-stimReps  = 200;                   % The number of repeats per stimulus
+stimReps  = 2000;                   % The number of repeats per stimulus
 
 %MAIN GOAL: loop through different initial values of uncMeta and confCrit and generate
 %LL surface for each
-for metaUncVal = linspace(0.01,5,5)
-    for confCritVal = linspace(0,5,5)
+for metaUncVal = logspace(log10(0.1),log10(5),5)
+    for confCritVal = linspace(0.25,5,5)
         % Set model parameters
         guessRate   = 0.000;                % The fraction of guesses
-        stimSens    = .5;                   % Stimulus sensitvity parameter, higher values produce a steeper psychometric function, strictly positive
+        %look at recent MTurk data and look at distribution of stimSens of
+        %subjects, and try stimSens values (median, 25%, and 75%)
+        %save figures for each stimSens value
+        stimSens    = 0.1;                   % Stimulus sensitvity parameter, higher values produce a steeper psychometric function, strictly positive
         stimCrit    = 0;                    % The sensory decision criterion in units of stimulus magnitude (e.g., orientation in degrees)
         uncMeta     = metaUncVal;                   % Meta-uncertainty: the second stage noise parameter, only affects confidence judgments, strictly positive
         confCrit    = confCritVal;              % The confidence criteria, unitless (can include more than 1)
@@ -65,7 +68,7 @@ for metaUncVal = linspace(0.01,5,5)
         
         %create metauncertainty and confidence criterion arrays
         metaUncArray = logspace(log10(0.1),log10(10),M);
-        confCritArray = linspace(0,5,N);
+        confCritArray = linspace(0.05,5,N);
         
         %generate (uncMeta,confCrit) pairs
         %generate 100 values for each variable
@@ -98,6 +101,8 @@ for metaUncVal = linspace(0.01,5,5)
         % sPlot = surfc(metaUncArray,confCritArray,LLArray);
         LLPlot = LLArray';
         sPlot = surfc(metaMesh,confMesh,LLPlot);
+        set(sPlot,'edgecolor','none');
+        set(gca,'XScale','log');
         %export file with a descriptive name
         outputFileName = strcat("(", num2str(metaUncVal), ",", num2str(confCritVal), ")_LL_Tradeoff_Analysis.fig");
         title(strcat("(", num2str(metaUncVal), ",", num2str(confCritVal), ")", " Parameter Tradeoff Analysis"));
@@ -106,6 +111,8 @@ for metaUncVal = linspace(0.01,5,5)
         
         %plot maximum LL value on surface plot
         scatter3(maxMetaUncVal,maxConfCritVal,maxLL,'r','filled');
+        fprintf('meta unc val %1.3f, conf crit val %1.3f \n\n',metaUncVal,confCritVal);
+        scatter3(metaUncVal,confCritVal,maxLL,'g','filled');
         hold off;
 
         %save figure
@@ -116,6 +123,6 @@ end
 
  
 function [NLL] = giveNLL(paramVec, stimValue, nChoice, calcPrecision, asymFlag)
-choiceLlh = getLlhChoice(stimValue, paramVec,calcPrecision, asymFlag);
+choiceLlh = getLlhChoice(stimValue, paramVec,calcPrecision, asymFlag) + eps;
 NLL       = -sum(sum(nChoice.*log(choiceLlh)));
 end
