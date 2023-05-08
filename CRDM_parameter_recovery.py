@@ -169,7 +169,7 @@ def simulate_CRDM(nb_samples=50):
 	gamma_range,alpha_range = range_variables(gamma_bound_dim,alpha_bound_dim,nb_samples=nb_var_samples)
 
 	# figure index for subplot
-	fig_idx = 1
+	# fig_idx = 1
 	xsize,ysize = len(gamma_range),len(alpha_range)
 	MSE_gamma = np.zeros((xsize,ysize))
 	NMSE_gamma = np.zeros((xsize,ysize))

@@ -31,11 +31,11 @@ def plot_save_3D(Xlin,Ylin,Z,gt,c0,c_hat,fig_info = (0,0),xlabel='',ylabel='',zl
 	print('estimate')
 	print(Xlin[c_hat[0]], Ylin[c_hat[1]], Z[c_hat[0],c_hat[1]])
 
-	fig = plt.figure(1)
+	fig = plt.figure(200)
 	# ax = fig.gca(projection='3d')
 	# fig, ax = plt.subplots(fig_info[0],fig_info[0],fig_info[1], subplot_kw={"projection": "3d"})
 	ax = fig.add_subplot(fig_info[0],fig_info[0],fig_info[1], projection='3d')
-	ax.plot_surface(X, Y, Z, rstride=8, cstride=8, alpha=0.1)
+	ax.plot_surface(X, Y, Z, rstride=8, cstride=8, alpha=0.3)
 	# ax.scatter(X[c0[0],c0[1]], Y[c0[0],c0[1]], Z[c0[0],c0[1]], c='green', marker='^', s=100)
 	ax.scatter(gt[0], np.log(gt[1]), -100, c='green', marker='^', s=100)
 	# ax.scatter(X[c_hat[0],c_hat[1]], Y[c_hat[0],c_hat[1]], Z[c_hat[0],c_hat[1]], c='black', marker='*', s=1000)
