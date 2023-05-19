@@ -30,8 +30,6 @@ for metaUncVal = logspace(log10(0.1),log10(5),5)
         %look at recent MTurk data and look at distribution of stimSens of
         %subjects, and try stimSens values (median, 25%, and 75%)
         %save figures for each stimSens value
-        %stimSens vector of 5 #'s
-        %start out with linspace(0.2 to 1.6)
         stimSens    = 1.0164726400103425;                   % Stimulus sensitvity parameter, higher values produce a steeper psychometric function, strictly positive
         stimCrit    = 0;                    % The sensory decision criterion in units of stimulus magnitude (e.g., orientation in degrees)
         uncMeta     = metaUncVal;                   % Meta-uncertainty: the second stage noise parameter, only affects confidence judgments, strictly positive
