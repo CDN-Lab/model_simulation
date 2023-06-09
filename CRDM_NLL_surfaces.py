@@ -37,10 +37,10 @@ def plot_save_3D(Xlin,Ylin,Z,gt,c0,c_hat,fig_info = (0,0),xlabel='',ylabel='',zl
 	ax = fig.add_subplot(fig_info[0],fig_info[0],fig_info[1], projection='3d')
 	ax.plot_surface(X, Y, Z, rstride=8, cstride=8, alpha=0.3)
 	# ax.scatter(X[c0[0],c0[1]], Y[c0[0],c0[1]], Z[c0[0],c0[1]], c='green', marker='^', s=100)
-	ax.scatter(gt[0], gt[1], -100, c='green', marker='^', s=100)
+	ax.scatter(gt[0], gt[1], 0, c='green', marker='^', s=100)
 	# ax.scatter(X[c_hat[0],c_hat[1]], Y[c_hat[0],c_hat[1]], Z[c_hat[0],c_hat[1]], c='black', marker='*', s=1000)
-	cset = ax.contour(X, Y, Z, zdir='z', offset=np.min(np.min(Z))-100, cmap=cm.coolwarm)
-	cset = ax.contour(X, Y, Z, zdir='x', offset=np.min(Xlin)-1, cmap=cm.coolwarm)
+	# cset = ax.contour(X, Y, Z, zdir='z', offset=np.min(np.min(Z))-100, cmap=cm.coolwarm)
+	cset = ax.contour(X, Y, Z, zdir='x', offset=np.min(Xlin), cmap=cm.coolwarm)
 	cset = ax.contour(X, Y, Z, zdir='y', offset=np.max(Ylin), cmap=cm.coolwarm)
 
 	# calc index of min/max Z value
@@ -55,13 +55,13 @@ def plot_save_3D(Xlin,Ylin,Z,gt,c0,c_hat,fig_info = (0,0),xlabel='',ylabel='',zl
 	# first row for points in xplane, last row for points in 3D space
 	Ami = np.array([mi]*4)
 	Ama = np.array([ma]*4)
-	for i, v in enumerate([-1,0,-100]):
+	for i, v in enumerate([np.min(Xlin),np.max(Ylin)]):
 		Ami[i,i] = v 
 		Ama[i,i] = v 
 
 	#plot points.
 	ax.plot(Ami[:,0], Ami[:,1], Ami[:,2], marker="o", ls="", c=cm.coolwarm(0.))
-	ax.plot(Ama[:,0], Ama[:,1], Ama[:,2], marker="o", ls="", c=cm.coolwarm(1.))
+	# ax.plot(Ama[:,0], Ama[:,1], Ama[:,2], marker="o", ls="", c=cm.coolwarm(1.))
 	if (fig_info[1]-1)//fig_info[0] == (fig_info[0]-1):
 		plt.xlabel(r'${}$'.format(xlabel))
 		plt.ylabel(r'${}$'.format(ylabel))
