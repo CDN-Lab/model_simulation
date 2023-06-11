@@ -28,8 +28,8 @@ def plot_save_3D(fig_idx=1,Xlin=[],Ylin=[],Z=[],xlabel='',ylabel='',zlabel=''):
 	ax = fig.subplots(subplot_kw={"projection": "3d"})
 	ax.plot_surface(X, Y, Z, rstride=8, cstride=8, alpha=0.5)
 	# offset = [np.min(Xlin)-1,np.max(Ylin),np.min(np.min(Z))]
-	offset = [X.min()-0.1*X.ptp(), Y.max()+0.1*Y.ptp(), Z.min()-0.1*Z.ptp()]
-	cset = ax.contour(X, Y, Z, zdir='z', offset=offset[2], cmap=cm.coolwarm)
+	offset = [X.min()-0.1*X.ptp(), Y.max()+0.1*Y.ptp()]#, Z.min()-0.1*Z.ptp()]
+	# cset = ax.contour(X, Y, Z, zdir='z', offset=offset[2], cmap=cm.coolwarm)
 	cset = ax.contour(X, Y, Z, zdir='x', offset=offset[0], cmap=cm.coolwarm)
 	cset = ax.contour(X, Y, Z, zdir='y', offset=offset[1], cmap=cm.coolwarm)
 
@@ -51,7 +51,7 @@ def plot_save_3D(fig_idx=1,Xlin=[],Ylin=[],Z=[],xlabel='',ylabel='',zlabel=''):
 
 	#plot points.
 	ax.plot(Ami[:,0], Ami[:,1], Ami[:,2], marker="o", ls="", c=cm.coolwarm(0.))
-	ax.plot(Ama[:,0], Ama[:,1], Ama[:,2], marker="o", ls="", c=cm.coolwarm(1.))
+	# ax.plot(Ama[:,0], Ama[:,1], Ama[:,2], marker="o", ls="", c=cm.coolwarm(1.))
 	plt.xlabel(r'${}$'.format(xlabel))
 	plt.ylabel(r'${}$'.format(ylabel))
 	ax.set_zlabel(r'${}$'.format(zlabel))
