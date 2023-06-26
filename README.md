@@ -10,7 +10,7 @@ We used the choice set space defined by the experiments to determine possible va
 <img src="./README_files/choice_set_space.png" alt="Choice Set Space" />
 
 
-### Confidence Delay Decision (CDD) - discount parameters, $\kappa$
+### Confidence Delay Decision (CDD) - discount  parameters, $\kappa$
 
 In this task we will equate the subject value (SV) for the two choices: $SV_{now}$ and $SV_{delay}$.
 
