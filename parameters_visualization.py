@@ -147,10 +147,10 @@ def main():
 
 	print('Welcome to parameters visualization, lets get started')
 	# We will start with CDD_analysis.csv for now
-	fn = '/Users/pizarror/mturk/idm_data/batch_output/raw/raw_CDD_analysis.csv'
+	fn = '/Volumes/UCDN/datasets/IDM/utility/split_CDD_analysis.csv'
 	CDD_plots(fn)
 
-	fn = '/Users/pizarror/mturk/idm_data/batch_output/raw/raw_CDD_analysis_alpha.csv'
+	fn = '/Volumes/UCDN/datasets/IDM/utility/split_CDD_analysis_alpha.csv'
 	# CDD_plots(fn)
 	
 	# CRDM_plots()
