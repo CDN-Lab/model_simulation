@@ -79,12 +79,12 @@ def CDD_plots(fn=''):
 	# fn = cf.request_input_path(prompt='Please enter the path to an arbitray {} file'.format(task))
 	df = pd.read_csv(fn,index_col=0)
 	# filter out modeled data at the boundary
-	df = df.loc[(df['kappa']<7) & (df['kappa']>0.01)]
-	df = df.loc[(df['gamma']<5)]
+	# df = df.loc[(df['kappa']<7) & (df['kappa']>0.01)]
+	# df = df.loc[(df['gamma']<5)]
 
 	# kappa versus gamma
 	x,y = df['gamma'],np.log(df['kappa'])
-	ax,ax_histx,ax_histy = setup_fig_ax();
+	ax,ax_histx,ax_histy = setup_fig_ax()
 	scatter_hist(x,y,ax,ax_histx,ax_histy, 
 		xlabel=r'$\gamma$ - inverse temperate (noise)',
 		ylabel=r'$\log \kappa$ - discount rate',
@@ -92,7 +92,7 @@ def CDD_plots(fn=''):
 
 	# R^2 versus gamma
 	x,y = df['gamma'],df['R2']
-	ax,ax_histx,ax_histy = setup_fig_ax();
+	ax,ax_histx,ax_histy = setup_fig_ax()
 	scatter_hist(x,y,ax,ax_histx,ax_histy, 
 		xlabel=r'$\gamma$ - inverse temperate (noise)',
 		ylabel=r'$R^2$ - coefficient of determination',
@@ -100,16 +100,16 @@ def CDD_plots(fn=''):
 
 	# kappa versus R^2
 	x,y = df['R2'],np.log(df['kappa'])
-	ax,ax_histx,ax_histy = setup_fig_ax();
+	ax,ax_histx,ax_histy = setup_fig_ax()
 	scatter_hist(x,y,ax,ax_histx,ax_histy, 
 		xlabel=r'$R^2$ - coefficient of determination',
 		ylabel=r'$\log \kappa$ - discount rate',
 		title=os.path.basename(fn).replace('.csv',''))
 
 
-def CRDM_plots():
+def CRDM_plots(fn=''):
 
-	fn = '/Users/pizarror/mturk/idm_data/batch_output/raw/raw_CRDM_analysis.csv'
+	# fn = '/Users/pizarror/mturk/idm_data/batch_output/raw/raw_CRDM_analysis.csv'
 	# Can also ask for the path using the following:
 	# fn = cf.request_input_path(prompt='Please enter the path to an arbitray {} file'.format(task))
 	df = pd.read_csv(fn,index_col=0)
@@ -119,15 +119,23 @@ def CRDM_plots():
 
 	# alpha versus gamma
 	x,y = df['gamma'],np.log(df['alpha'])
-	ax,ax_histx,ax_histy = setup_fig_ax();
+	ax,ax_histx,ax_histy = setup_fig_ax()
 	scatter_hist(x,y,ax,ax_histx,ax_histy, 
 		xlabel=r'$\gamma$ - inverse temperate (noise)',
 		ylabel=r'$\log \alpha$ - risk attitude',
 		title=os.path.basename(fn).replace('.csv',''))
 
+	# alpha versus beta
+	x,y = np.log(df['beta']),np.log(df['alpha'])
+	ax,ax_histx,ax_histy = setup_fig_ax()
+	scatter_hist(x,y,ax,ax_histx,ax_histy, 
+		xlabel=r'$\log \beta$ - ambiguity aversion',
+		ylabel=r'$\log \alpha$ - risk attitude',
+		title=os.path.basename(fn).replace('.csv',''))
+
 	# R^2 versus gamma
 	x,y = df['gamma'],df['R2']
-	ax,ax_histx,ax_histy = setup_fig_ax();
+	ax,ax_histx,ax_histy = setup_fig_ax()
 	scatter_hist(x,y,ax,ax_histx,ax_histy, 
 		xlabel=r'$\gamma$ - inverse temperate (noise)',
 		ylabel=r'$R^2$ - coefficient of determination',
@@ -135,7 +143,7 @@ def CRDM_plots():
 
 	# alpha versus R^2
 	x,y = df['R2'],np.log(df['alpha'])
-	ax,ax_histx,ax_histy = setup_fig_ax();
+	ax,ax_histx,ax_histy = setup_fig_ax()
 	scatter_hist(x,y,ax,ax_histx,ax_histy, 
 		xlabel=r'$R^2$ - coefficient of determination',
 		ylabel=r'$\log \alpha$ - risk attitude',
@@ -148,12 +156,13 @@ def main():
 	print('Welcome to parameters visualization, lets get started')
 	# We will start with CDD_analysis.csv for now
 	fn = '/Volumes/UCDN/datasets/IDM/utility/split_CDD_analysis.csv'
-	CDD_plots(fn)
+	# CDD_plots(fn)
 
 	fn = '/Volumes/UCDN/datasets/IDM/utility/split_CDD_analysis_alpha.csv'
 	# CDD_plots(fn)
 	
-	# CRDM_plots()
+	fn = '/Volumes/UCDN/datasets/IDM/utility/split_CRDM_analysis.csv'
+	CRDM_plots(fn)
 
 	plt.show()
 
