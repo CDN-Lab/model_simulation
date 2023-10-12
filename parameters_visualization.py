@@ -74,6 +74,11 @@ def setup_fig_ax():
 
 	return ax,ax_histx,ax_histy
 
+def print_stats(x,y,x_name='gamma',y_name='log_kappa'):
+	print('{0} (mean,var):({1:0.2f},{2:0.2f})'.format(x_name,np.mean(x),np.var(x)))
+	print('{0} (mean,var):({1:0.2f},{2:0.2f})'.format(y_name,np.mean(y),np.var(y)))
+
+
 def CDD_plots(fn=''):
 	# Can also ask for the path using the following:
 	# fn = cf.request_input_path(prompt='Please enter the path to an arbitray {} file'.format(task))
@@ -84,6 +89,8 @@ def CDD_plots(fn=''):
 
 	# kappa versus gamma
 	x,y = df['gamma'],np.log(df['kappa'])
+	print_stats(x,y,x_name='gamma',y_name='log_kappa')
+	print_stats(x,y[y>np.log(0.0022)],x_name='gamma',y_name='log_kappa')
 	ax,ax_histx,ax_histy = setup_fig_ax()
 	scatter_hist(x,y,ax,ax_histx,ax_histy, 
 		xlabel=r'$\gamma$ - inverse temperate (noise)',
@@ -156,13 +163,13 @@ def main():
 	print('Welcome to parameters visualization, lets get started')
 	# We will start with CDD_analysis.csv for now
 	fn = '/Volumes/UCDN/datasets/IDM/utility/split_CDD_analysis.csv'
-	# CDD_plots(fn)
+	CDD_plots(fn)
 
 	fn = '/Volumes/UCDN/datasets/IDM/utility/split_CDD_analysis_alpha.csv'
 	# CDD_plots(fn)
 	
 	fn = '/Volumes/UCDN/datasets/IDM/utility/split_CRDM_analysis.csv'
-	CRDM_plots(fn)
+	# CRDM_plots(fn)
 
 	plt.show()
 
