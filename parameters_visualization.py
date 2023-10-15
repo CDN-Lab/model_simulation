@@ -89,7 +89,7 @@ def CDD_plots(fn=''):
 
 	# kappa versus gamma
 	x,y = df['gamma'],np.log(df['kappa'])
-	print_stats(x,y,x_name='gamma',y_name='log_kappa')
+	# print_stats(x,y,x_name='gamma',y_name='log_kappa')
 	print_stats(x,y[y>np.log(0.0022)],x_name='gamma',y_name='log_kappa')
 	ax,ax_histx,ax_histy = setup_fig_ax()
 	scatter_hist(x,y,ax,ax_histx,ax_histy, 
