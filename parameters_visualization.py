@@ -121,8 +121,8 @@ def CRDM_plots(fn=''):
 	# fn = cf.request_input_path(prompt='Please enter the path to an arbitray {} file'.format(task))
 	df = pd.read_csv(fn,index_col=0)
 	# filter out modeled data at the boundary
-	df = df.loc[(df['alpha']>0.125)]
-	df = df.loc[(df['gamma']<5)]
+	# df = df.loc[(df['alpha']>0.125)]
+	# df = df.loc[(df['gamma']<5)]
 
 	# alpha versus gamma
 	x,y = df['gamma'],np.log(df['alpha'])
@@ -133,10 +133,10 @@ def CRDM_plots(fn=''):
 		title=os.path.basename(fn).replace('.csv',''))
 
 	# alpha versus beta
-	x,y = np.log(df['beta']),np.log(df['alpha'])
+	x,y = df['beta'],np.log(df['alpha'])
 	ax,ax_histx,ax_histy = setup_fig_ax()
 	scatter_hist(x,y,ax,ax_histx,ax_histy, 
-		xlabel=r'$\log \beta$ - ambiguity aversion',
+		xlabel=r'$\beta$ - ambiguity aversion',
 		ylabel=r'$\log \alpha$ - risk attitude',
 		title=os.path.basename(fn).replace('.csv',''))
 
@@ -163,13 +163,13 @@ def main():
 	print('Welcome to parameters visualization, lets get started')
 	# We will start with CDD_analysis.csv for now
 	fn = '/Volumes/UCDN/datasets/IDM/utility/split_CDD_analysis.csv'
-	CDD_plots(fn)
+	# CDD_plots(fn)
 
 	fn = '/Volumes/UCDN/datasets/IDM/utility/split_CDD_analysis_alpha.csv'
 	# CDD_plots(fn)
 	
 	fn = '/Volumes/UCDN/datasets/IDM/utility/split_CRDM_analysis.csv'
-	# CRDM_plots(fn)
+	CRDM_plots(fn)
 
 	plt.show()
 
