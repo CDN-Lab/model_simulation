@@ -24,7 +24,7 @@ def main():
 	df['alpha'] = np.log( df['crdm_lott_p']/factor ) / ( np.finfo(np.float32).eps + np.log( df['crdm_sure_amt']/df['crdm_lott_amt'] ) )
 	df['log_alpha'] = np.log(df['alpha'])
 	df = df.sort_values(by=['alpha'])
-	df_alpha = df[['alpha','crdm_sure_amt', 'crdm_sure_p', 'crdm_lott_amt', 'crdm_lott_p','crdm_amb_lev']]
+	df_alpha = df[['alpha','log_alpha','crdm_sure_amt', 'crdm_sure_p', 'crdm_lott_amt', 'crdm_lott_p','crdm_amb_lev']]
 	print(df_alpha)
 
 	save_df(df_alpha,prompt='Please enter the path where to write alpha estimates')
