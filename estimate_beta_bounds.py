@@ -16,9 +16,12 @@ def main():
 
 	# bound 0 < p - beta*A/2 < 1.0; where p = (1-A)/2
 	# top bound 0 < p - beta*A/2 : beta < 1/A -1
-	df['beta_top'] = 1.0/(df['crdm_amb_lev']/100.0)
+	factor = 1.0
+	if np.max(df['crdm_lott_p'])>1.0:
+		factor = 100.0
+	df['beta_top'] = 1.0/(df['crdm_amb_lev']/factor)
 	# bottom bound p - beta*A/2 < 1.0 : -1 < beta
-	df['beta_bottom'] = -1.0/(df['crdm_amb_lev']/100.0)
+	df['beta_bottom'] = -1.0/(df['crdm_amb_lev']/factor)
 	df = df.sort_values(by=['beta_top'])
 	df_beta = df[['beta_top','beta_bottom','crdm_amb_lev','crdm_sure_amt', 'crdm_sure_p', 'crdm_lott_amt', 'crdm_lott_p']]
 	print(df_beta)
